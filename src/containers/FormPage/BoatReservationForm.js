@@ -1,7 +1,13 @@
 import React, { useState } from 'react';
-import './BoatReservationForm.css'; // Importando o arquivo CSS
+import './BoatReservationForm.css'; 
 
-const BoatReservationForm = () => {
+
+const BoatReservationForm = ({ onSubmitCallback }) => {
+  const handleSubmit = event => {
+    event.preventDefault();
+    console.log("OK");
+    onSubmitCallback(); 
+  };
   const [primaryGuest, setPrimaryGuest] = useState({
     firstName: '',
     lastName: '',
@@ -58,15 +64,9 @@ const BoatReservationForm = () => {
     setSecondaryGuests(list);
   };
 
-  const handleSubmit = event => {
-    event.preventDefault();
-    // Aqui você pode fazer algo com os dados, como enviá-los para o servidor
-    console.log({ primaryGuest, secondaryGuests });
-  };
-
   return (
     <form className="form-container" onSubmit={handleSubmit}>
-      <h2 className="form-header">Boat Rental/Charter Reservation Form</h2>
+      <h2 className="form-header">Boat Rental Reservation Form</h2>
       <div className="form-section">
         <h3>Primary Guest Information:</h3>
         <div className="input-group">

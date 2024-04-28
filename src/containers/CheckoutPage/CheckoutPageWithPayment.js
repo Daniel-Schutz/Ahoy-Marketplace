@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { arrayOf, bool, func, object, oneOfType, shape, string } from 'prop-types';
-import BoatReservationForm from './BoatReservationForm.js';
 // Import contexts and util modules
 import { FormattedMessage, intlShape } from '../../util/reactIntl';
 import { pathByRouteName } from '../../util/routes';
@@ -428,7 +427,6 @@ export const CheckoutPageWithPayment = props => {
           firstImage={firstImage}
           layoutListingImageConfig={config.layout.listingImage}
         />
-        <BoatReservationForm />
         <div className={css.orderFormContainer}>
           <div className={css.headingContainer}>
             <H3 as="h1" className={css.heading}>

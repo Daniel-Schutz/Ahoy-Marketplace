@@ -35,6 +35,8 @@ const SearchPageWithGrid = loadable(() => import(/* webpackChunkName: "SearchPag
 const StripePayoutPage = loadable(() => import(/* webpackChunkName: "StripePayoutPage" */ '../containers/StripePayoutPage/StripePayoutPage'));
 const TermsOfServicePage = loadable(() => import(/* webpackChunkName: "TermsOfServicePage" */ '../containers/TermsOfServicePage/TermsOfServicePage'));
 const TransactionPage = loadable(() => import(/* webpackChunkName: "TransactionPage" */ '../containers/TransactionPage/TransactionPage'));
+const ReservationPage  = loadable(() => import(/* webpackChunkName: "TransactionPage" */ '../containers/FormPage/BoatReservationForm'));
+const SellPage  = loadable(() => import(/* webpackChunkName: "TransactionPage" */ '../containers/FormPage/BoatSellForm'));
 
 // Styleguide helps you to review current components and develop new ones
 const StyleguidePage = loadable(() => import(/* webpackChunkName: "StyleguidePage" */ '../containers/StyleguidePage/StyleguidePage'));
@@ -368,6 +370,17 @@ const routeConfiguration = (layoutConfig) => {
       path: '/preview',
       name: 'PreviewResolverPage',
       component: PreviewResolverPage ,
+    },
+    {
+      path: '/reservation-form',
+      name: 'ReservationPage',
+      component: ReservationPage ,
+
+    },
+    {
+      path: '/sell-form',
+      name: 'SellPage',
+      component: SellPage ,
     },
   ];
 };

@@ -57,6 +57,7 @@ const SectionDetailsMaybe = props => {
           </li>
         ))}
       </ul>
+      
     </section>
   ) : null;
 };

@@ -82,6 +82,7 @@ const SectionHero = props => {
           imageVariants={['scaled-small', 'scaled-medium', 'scaled-large', 'scaled-xlarge']}
         />
       </Modal>
+   
     </section>
   );
 };

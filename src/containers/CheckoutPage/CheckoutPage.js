@@ -3,7 +3,8 @@ import { compose } from 'redux';
 import { connect } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { useIntl } from 'react-intl';
-
+import BoatReservationForm from '../FormPage/BoatReservationForm';
+import BoatSellForm from '../FormPage/BoatSellForm';
 // Import contexts and util modules
 import { useConfiguration } from '../../context/configurationContext';
 import { useRouteConfiguration } from '../../context/routeConfigurationContext';
@@ -37,8 +38,12 @@ import CheckoutPageWithPayment, {
   loadInitialDataForStripePayments,
 } from './CheckoutPageWithPayment';
 import CheckoutPageWithInquiryProcess from './CheckoutPageWithInquiryProcess';
+import { handleSubmit } from '../ListingPage/ListingPage.shared';
 
 const STORAGE_KEY = 'CheckoutPage';
+
+
+
 
 const onSubmitCallback = () => {
   clearData(STORAGE_KEY);
@@ -55,6 +60,10 @@ const getProcessName = pageData => {
 };
 
 const EnhancedCheckoutPage = props => {
+  const [formSubmitted, setFormSubmitted] = useState(false); 
+  const handleFormSubmit = () => {
+    setFormSubmitted(true);
+  };
   const [pageData, setPageData] = useState({});
   const [isDataLoaded, setIsDataLoaded] = useState(false);
   const config = useConfiguration();
@@ -103,6 +112,7 @@ const EnhancedCheckoutPage = props => {
   const hasRequiredData = !!(listing?.id && listing?.author?.id && processName);
   const shouldRedirect = isDataLoaded && !(hasRequiredData && !isOwnListing);
 
+ 
   // Redirect back to ListingPage if data is missing.
   // Redirection must happen before any data format error is thrown (e.g. wrong currency)
   if (shouldRedirect) {
@@ -136,7 +146,19 @@ const EnhancedCheckoutPage = props => {
       onSubmitCallback={onSubmitCallback}
       {...props}
     />
-  ) : processName && !isInquiryProcess && !speculateTransactionInProgress ? (
+  ) : processName==='default-booking' && !isInquiryProcess && !speculateTransactionInProgress && formSubmitted === false? (
+    <Page title={title} scrollingDisabled={scrollingDisabled}>
+    <CustomTopbar intl={intl} linkToExternalSite={config?.topbar?.logoLink} />
+    <BoatReservationForm onSubmitCallback={handleFormSubmit}/>
+  </Page>
+
+  ) : processName==='default-purchase' && !isInquiryProcess && !speculateTransactionInProgress && formSubmitted === false ? (
+    <Page title={title} scrollingDisabled={scrollingDisabled}>
+      <CustomTopbar intl={intl} linkToExternalSite={config?.topbar?.logoLink} />
+      <BoatSellForm onSubmitCallback={handleFormSubmit} />
+    </Page>
+
+  ) : processName==='default-purchase' && !isInquiryProcess && !speculateTransactionInProgress && formSubmitted === true?(
     <CheckoutPageWithPayment
       config={config}
       routeConfiguration={routeConfiguration}
@@ -151,12 +173,29 @@ const EnhancedCheckoutPage = props => {
       onSubmitCallback={onSubmitCallback}
       {...props}
     />
-  ) : (
-    <Page title={title} scrollingDisabled={scrollingDisabled}>
+  ): processName==='default-booking' && !isInquiryProcess && !speculateTransactionInProgress && formSubmitted === true?(
+    <CheckoutPageWithPayment
+      config={config}
+      routeConfiguration={routeConfiguration}
+      intl={intl}
+      history={history}
+      processName={processName}
+      sessionStorageKey={STORAGE_KEY}
+      pageData={pageData}
+      setPageData={setPageData}
+      listingTitle={listingTitle}
+      title={title}
+      onSubmitCallback={onSubmitCallback}
+      {...props}
+    />
+  ):(
+    <Page title={title} scrollingDisabled={scrollingDisabled}>      
       <CustomTopbar intl={intl} linkToExternalSite={config?.topbar?.logoLink} />
     </Page>
   );
 };
+
+
 
 const mapStateToProps = state => {
   const {
