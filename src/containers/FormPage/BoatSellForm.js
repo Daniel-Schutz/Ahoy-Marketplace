@@ -29,7 +29,7 @@ const BoatSellForm = ({ onSubmitCallback }) => {
 
   return (
     <form className="form-container" onSubmit={handleSubmit}>
-      <h2 className="form-header">Boat Sell Form</h2>
+      <h2 className="form-header">Boat Sale Form</h2>
       <div className="form-section">
         <input
           type="text"

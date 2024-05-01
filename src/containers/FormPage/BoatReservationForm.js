@@ -20,6 +20,7 @@ const BoatReservationForm = ({ onSubmitCallback }) => {
     state: '',
     country: '',
     citizenship: '',
+    numOfPassengers:'',
     emergencyContact: {
       name: '',
       phone: ''
@@ -147,6 +148,13 @@ const BoatReservationForm = ({ onSubmitCallback }) => {
             value={primaryGuest.citizenship}
             onChange={handlePrimaryInputChange}
           />
+           <input
+            type="text"
+            placeholder="Number of Passengers"
+            name="numOfPassengers"
+            value={primaryGuest.numOfPassengers}
+            onChange={handlePrimaryInputChange}
+          />
           <input
             type="text"
             placeholder="Emergency Contact Name"
@@ -165,7 +173,7 @@ const BoatReservationForm = ({ onSubmitCallback }) => {
       </div>
 
       <div className="form-section">
-        <h3>Secondary Guests Information:</h3>
+        <h3>Guests Information: (Optional)</h3>
         {secondaryGuests.map((guest, index) => (
           <div key={index} className="input-group">
             <input
