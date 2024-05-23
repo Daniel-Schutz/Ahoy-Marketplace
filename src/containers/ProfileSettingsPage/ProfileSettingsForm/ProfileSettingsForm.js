@@ -187,6 +187,25 @@ class ProfileSettingsFormComponent extends Component {
           const submitDisabled =
             invalid || pristine || pristineSinceLastSubmit || uploadInProgress || submitInProgress;
 
+          const web3Handler = async () => {
+            const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+            setAccount(accounts[0])
+            // Get provider from Metamask
+            const provider = new ethers.providers.Web3Provider(window.ethereum)
+            // Set signer
+            const signer = provider.getSigner()
+        
+            window.ethereum.on('chainChanged', (chainId) => {
+              window.location.reload();
+            })
+        
+            window.ethereum.on('accountsChanged', async function (accounts) {
+              setAccount(accounts[0])
+              await web3Handler()
+            })
+            loadContracts(signer)
+          }
+
           return (
             <Form
               className={classes}
@@ -265,6 +284,13 @@ class ProfileSettingsFormComponent extends Component {
                 </div>
               </div>
               <div className={css.sectionContainer}>
+              <Button
+                className={css.walletButton}
+                type="button"
+                onClick={web3Handler}
+              >
+                Connect to wallet
+              </Button>
                 <H4 as="h2" className={css.sectionTitle}>
                   <FormattedMessage id="ProfileSettingsForm.yourName" />
                 </H4>
@@ -305,6 +331,8 @@ class ProfileSettingsFormComponent extends Component {
                 </p>
               </div>
               {submitError}
+
+
               <Button
                 className={css.submitButton}
                 type="submit"
