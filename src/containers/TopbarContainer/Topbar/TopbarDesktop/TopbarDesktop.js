@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { bool, func, object, number, string } from 'prop-types';
 import classNames from 'classnames';
-
+import { ethers } from "ethers"
 import { FormattedMessage, intlShape } from '../../../../util/reactIntl';
 import { ACCOUNT_SETTINGS_PAGES } from '../../../../routing/routeConfiguration';
 import { propTypes } from '../../../../util/types';
+
+//contract imports 
+import AhoyAddress from '../../../../contractsData/Ahoy-address.json'
+import AhoyAbi from '../../../../contractsData/Ahoy.json'
 import {
   Avatar,
   InlineTextButton,
@@ -14,6 +18,7 @@ import {
   MenuContent,
   MenuItem,
   NamedLink,
+  Button,
 } from '../../../../components';
 
 import TopbarSearchForm from '../TopbarSearchForm/TopbarSearchForm';
@@ -64,6 +69,64 @@ const ProfileMenu = ({ currentPage, currentUser, onLogout }) => {
     return currentPage === page || isAccountSettingsPage ? css.currentPage : null;
   };
 
+  const [client, setClient] = useState({
+    account: null,
+    signer: null,
+    chainId: null,
+    provider: null
+});
+const [hasWeb3, setHasWeb3] = useState(false);
+
+const web3Handler = async () => {
+  var account; var chainId;
+
+  await window.ethereum.request({ method: 'eth_requestAccounts' })
+  .then((accounts) => {
+    account = accounts[0] });
+
+  await window.ethereum.request({ method: 'eth_chainId' })
+  .then((res) => {
+    chainId = res });
+
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const balance = await provider.getBalance(account);
+    let balanceInEther = ethers.utils.formatEther(balance);
+    balanceInEther = Math.floor(balanceInEther)
+    
+    const signer = await provider.getSigner();
+
+    setClient({
+      account: account,
+      signer: signer,
+      chainId: parseInt(chainId, 16),
+      provider: provider,
+      balanceInEther,
+    })
+
+    loadContracts(client.account)
+}
+
+
+const loadContracts = async (signer) => {
+  // Get deployed copies of contracts
+  const ahoy = new ethers.Contract(AhoyAddress.address, AhoyAbi.abi, signer)
+  // const ahoyRentals = new ethers.Contract(AhoyRentalAddress.address, AhoyRentalAbi.abi, signer)
+  // console.log("Ahoy contract address:", ahoy.address);
+  // console.log("Ahoy Rental contract address:", ahoyRentals.address);
+
+  // const owner = await ahoyRentals.getOwner();
+
+  console.log(ahoy)
+}
+
+if (window.ethereum) {
+  window.ethereum.on('chainChanged', () => {window.location.reload()});
+  window.ethereum.on('accountsChanged', () => {window.location.reload()});
+  if(!hasWeb3) { setHasWeb3(true); }
+  console.log(client)
+}
+
+
   return (
     <Menu>
       <MenuLabel className={css.profileMenuLabel} isOpenClassName={css.profileMenuIsOpen}>
@@ -97,6 +160,38 @@ const ProfileMenu = ({ currentPage, currentUser, onLogout }) => {
             <FormattedMessage id="TopbarDesktop.accountSettingsLink" />
           </NamedLink>
         </MenuItem>
+        <MenuItem key="button">
+          {!hasWeb3 ? (
+            <Button 
+              href="https://metamask.io/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              style={{ width: '60%', marginLeft:"10px" }}
+            >
+              Download MetaMask
+            </Button>
+          ) : client.account ? (
+            <div>
+              <Button 
+                disabled 
+                style={{ 
+                  backgroundColor: 'green',
+                  width: '60%', marginLeft:"10px"
+                }}
+              >
+                {client.account.slice(0, 6) + '...' + client.account.slice(-4)}
+              </Button>
+            </div>
+          ) : (
+            <Button 
+              onClick={web3Handler}
+              style={{ width: '60%', marginLeft:"10px" }}
+            >
+              Connect Wallet
+            </Button>
+          )}
+        </MenuItem>
+
         <MenuItem key="logout">
           <InlineTextButton rootClassName={css.logoutButton} onClick={onLogout}>
             <span className={css.menuItemBorder} />
