@@ -2,14 +2,21 @@
  *  TopbarMobileMenu prints the menu content for authenticated user or
  * shows login actions for those who are not authenticated.
  */
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
+
+//contract imports 
+import AhoyAddress from '../../../../contractsData/Ahoy-address.json'
+import AhoyAbi from '../../../../contractsData/Ahoy.json'
+import { ethers } from "ethers";
 
 import { ACCOUNT_SETTINGS_PAGES } from '../../../../routing/routeConfiguration';
 import { FormattedMessage } from '../../../../util/reactIntl';
 import { propTypes } from '../../../../util/types';
 import { ensureCurrentUser } from '../../../../util/data';
+
+
 
 import {
   AvatarLarge,
@@ -17,6 +24,7 @@ import {
   InlineTextButton,
   NamedLink,
   NotificationBadge,
+  Button,
 } from '../../../../components';
 
 import css from './TopbarMobileMenu.module.css';
@@ -133,6 +141,65 @@ const TopbarMobileMenu = props => {
   };
   const inboxTab = currentUserHasListings ? 'sales' : 'orders';
 
+  const [client, setClient] = useState({
+    account: null,
+    signer: null,
+    chainId: null,
+    provider: null
+});
+const [hasWeb3, setHasWeb3] = useState(false);
+
+const web3Handler = async () => {
+  var account; var chainId;
+
+  await window.ethereum.request({ method: 'eth_requestAccounts' })
+  .then((accounts) => {
+    account = accounts[0] });
+
+  await window.ethereum.request({ method: 'eth_chainId' })
+  .then((res) => {
+    chainId = res });
+
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const balance = await provider.getBalance(account);
+    let balanceInEther = ethers.utils.formatEther(balance);
+    balanceInEther = Math.floor(balanceInEther)
+    
+    const signer = await provider.getSigner();
+
+    setClient({
+      account: account,
+      signer: signer,
+      chainId: parseInt(chainId, 16),
+      provider: provider,
+      balanceInEther,
+    })
+
+    loadContracts(client.account)
+}
+
+
+const loadContracts = async (signer) => {
+  // Get deployed copies of contracts
+  const ahoy = new ethers.Contract(AhoyAddress.address, AhoyAbi.abi, signer)
+  // const ahoyRentals = new ethers.Contract(AhoyRentalAddress.address, AhoyRentalAbi.abi, signer)
+  // console.log("Ahoy contract address:", ahoy.address);
+  // console.log("Ahoy Rental contract address:", ahoyRentals.address);
+
+  // const owner = await ahoyRentals.getOwner();
+
+  console.log(ahoy)
+}
+
+if (window.ethereum) {
+  window.ethereum.on('chainChanged', () => {window.location.reload()});
+  window.ethereum.on('accountsChanged', () => {window.location.reload()});
+  if(!hasWeb3) { setHasWeb3(true); }
+  console.log(client)
+}
+
+
+
   return (
     <div className={css.root}>
       <AvatarLarge className={css.avatar} user={currentUser} />
@@ -171,6 +238,36 @@ const TopbarMobileMenu = props => {
           >
             <FormattedMessage id="TopbarMobileMenu.accountSettingsLink" />
           </NamedLink>
+          {!hasWeb3 ? (
+            <Button 
+              href="https://metamask.io/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+
+            >
+              Download MetaMask
+            </Button>
+          ) : client.account ? (
+            <div>
+              <Button 
+                disabled 
+                style={{ 
+                  backgroundColor: 'green',
+      
+                }}
+              >
+                {client.account.slice(0, 6) + '...' + client.account.slice(-4)}
+              </Button>
+            </div>
+          ) : (
+            <Button 
+              onClick={web3Handler}
+            >
+              Connect Wallet
+            </Button>
+          )}
+
+          
         </div>
         <div className={css.customLinksWrapper}>{extraLinks}</div>
         <div className={css.spacer} />

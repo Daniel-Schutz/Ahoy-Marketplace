@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { bool, func, object, number, string } from 'prop-types';
 import classNames from 'classnames';
-import { ethers } from "ethers"
+
 import { FormattedMessage, intlShape } from '../../../../util/reactIntl';
 import { ACCOUNT_SETTINGS_PAGES } from '../../../../routing/routeConfiguration';
 import { propTypes } from '../../../../util/types';
@@ -9,6 +9,8 @@ import { propTypes } from '../../../../util/types';
 //contract imports 
 import AhoyAddress from '../../../../contractsData/Ahoy-address.json'
 import AhoyAbi from '../../../../contractsData/Ahoy.json'
+import { ethers } from "ethers";
+
 import {
   Avatar,
   InlineTextButton,
@@ -78,6 +80,7 @@ const ProfileMenu = ({ currentPage, currentUser, onLogout }) => {
 const [hasWeb3, setHasWeb3] = useState(false);
 
 const web3Handler = async () => {
+
   var account; var chainId;
 
   await window.ethereum.request({ method: 'eth_requestAccounts' })
@@ -104,6 +107,11 @@ const web3Handler = async () => {
     })
 
     loadContracts(client.account)
+
+    currentUser.updateProfile(
+      { client: { client } }
+    )
+    console.log(currentUser)
 }
 
 
