@@ -107,7 +107,7 @@ const web3Handler = async () => {
     })
 
     loadContracts(client.account)
-
+    
     currentUser.updateProfile(
       { client: { client } }
     )
