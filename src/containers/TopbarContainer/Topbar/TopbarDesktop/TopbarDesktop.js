@@ -6,9 +6,9 @@ import { FormattedMessage, intlShape } from '../../../../util/reactIntl';
 import { ACCOUNT_SETTINGS_PAGES } from '../../../../routing/routeConfiguration';
 import { propTypes } from '../../../../util/types';
 
-//contract imports 
-import AhoyAddress from '../../../../contractsData/Ahoy-address.json'
-import AhoyAbi from '../../../../contractsData/Ahoy.json'
+// Contract imports 
+import AhoyAddress from '../../../../contractsData/Ahoy-address.json';
+import AhoyAbi from '../../../../contractsData/Ahoy.json';
 import { ethers } from "ethers";
 
 import {
@@ -64,7 +64,7 @@ const InboxLink = ({ notificationCount, currentUserHasListings }) => {
   );
 };
 
-const ProfileMenu = ({ currentPage, currentUser, onLogout }) => {
+const ProfileMenu = ({ currentPage, currentUser, onLogout, onUpdateProfile }) => {
   const currentPageClass = page => {
     const isAccountSettingsPage =
       page === 'AccountSettingsPage' && ACCOUNT_SETTINGS_PAGES.includes(currentPage);
@@ -75,65 +75,85 @@ const ProfileMenu = ({ currentPage, currentUser, onLogout }) => {
     account: null,
     signer: null,
     chainId: null,
-    provider: null
-});
-const [hasWeb3, setHasWeb3] = useState(false);
+    provider: null,
+    balanceInEther: null,
+  });
+  const [hasWeb3, setHasWeb3] = useState(false);
 
-const web3Handler = async () => {
+  const testF = () => {
+    console.log("testF client:", client);
+    const profileParams = {
+      publicData: {
+        clientTest: "client"
+      }
+    };
+    onUpdateProfile(profileParams);
+    console.log("Current user:", currentUser);
+  };
 
-  var account; var chainId;
+  const web3Handler = async () => {
+    try {
+      let account;
+      let chainId;
 
-  await window.ethereum.request({ method: 'eth_requestAccounts' })
-  .then((accounts) => {
-    account = accounts[0] });
+      await window.ethereum.request({ method: 'eth_requestAccounts' })
+        .then((accounts) => {
+          account = accounts[0];
+        });
 
-  await window.ethereum.request({ method: 'eth_chainId' })
-  .then((res) => {
-    chainId = res });
+      await window.ethereum.request({ method: 'eth_chainId' })
+        .then((res) => {
+          chainId = res;
+        });
 
-    const provider = new ethers.providers.Web3Provider(window.ethereum);
-    const balance = await provider.getBalance(account);
-    let balanceInEther = ethers.utils.formatEther(balance);
-    balanceInEther = Math.floor(balanceInEther)
-    
-    const signer = await provider.getSigner();
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      console.log(provider)
+      const balance = await provider.getBalance(account);
+      let balanceInEther = ethers.utils.formatEther(balance);
+      balanceInEther = Math.floor(balanceInEther);
 
-    setClient({
-      account: account,
-      signer: signer,
-      chainId: parseInt(chainId, 16),
-      provider: provider,
-      balanceInEther,
-    })
+      const signer = await provider.getSigner();
 
-    loadContracts(client.account)
-    
-    currentUser.updateProfile(
-      { client: { client } }
-    )
-    console.log(currentUser)
-}
+      const updatedClient = {
+        account: account,
+        signer: signer,
+        chainId: parseInt(chainId, 16),
+        provider: provider,
+        balanceInEther,
+      };
 
+      setClient(updatedClient);
+      console.log("Updated client:", signer);
 
-const loadContracts = async (signer) => {
-  // Get deployed copies of contracts
-  const ahoy = new ethers.Contract(AhoyAddress.address, AhoyAbi.abi, signer)
-  // const ahoyRentals = new ethers.Contract(AhoyRentalAddress.address, AhoyRentalAbi.abi, signer)
-  // console.log("Ahoy contract address:", ahoy.address);
-  // console.log("Ahoy Rental contract address:", ahoyRentals.address);
+      const profileParams = {
+        publicData: {
+          clientTest: { 'account': account, "chainId": parseInt(chainId, 16), "provider":"provider"}
+        }
+      };
 
-  // const owner = await ahoyRentals.getOwner();
+      onUpdateProfile(profileParams);
+      loadContracts(signer);
+    } catch (error) {
+      console.error("Error in web3Handler:", error);
+    }
+  };
 
-  console.log(ahoy)
-}
+  const loadContracts = async (signer) => {
+    try {
+      const ahoy = new ethers.Contract(AhoyAddress.address, AhoyAbi.abi, signer);
+      console.log(ahoy);
+    } catch (error) {
+      console.error("Error in loadContracts:", error);
+    }
+  };
 
-if (window.ethereum) {
-  window.ethereum.on('chainChanged', () => {window.location.reload()});
-  window.ethereum.on('accountsChanged', () => {window.location.reload()});
-  if(!hasWeb3) { setHasWeb3(true); }
-  console.log(client)
-}
-
+  useEffect(() => {
+    if (window.ethereum) {
+      window.ethereum.on('chainChanged', () => { window.location.reload(); });
+      window.ethereum.on('accountsChanged', () => { window.location.reload(); });
+      if (!hasWeb3) { setHasWeb3(true); }
+    }
+  }, [hasWeb3]);
 
   return (
     <Menu>
@@ -170,35 +190,36 @@ if (window.ethereum) {
         </MenuItem>
         <MenuItem key="button">
           {!hasWeb3 ? (
-            <Button 
-              href="https://metamask.io/" 
-              target="_blank" 
+            <Button
+              href="https://metamask.io/"
+              target="_blank"
               rel="noopener noreferrer"
-              style={{ width: '60%', marginLeft:"10px" }}
+              style={{ width: '60%', marginLeft: "10px" }}
             >
               Download MetaMask
             </Button>
           ) : client.account ? (
             <div>
-              <Button 
-                disabled 
-                style={{ 
+              <Button
+                disabled
+                style={{
                   backgroundColor: 'green',
-                  width: '60%', marginLeft:"10px"
+                  width: '60%', marginLeft: "10px"
                 }}
               >
                 {client.account.slice(0, 6) + '...' + client.account.slice(-4)}
               </Button>
             </div>
           ) : (
-            <Button 
+            <Button
               onClick={web3Handler}
-              style={{ width: '60%', marginLeft:"10px" }}
+              style={{ width: '60%', marginLeft: "10px" }}
             >
               Connect Wallet
             </Button>
           )}
         </MenuItem>
+
 
         <MenuItem key="logout">
           <InlineTextButton rootClassName={css.logoutButton} onClick={onLogout}>
@@ -226,6 +247,7 @@ const TopbarDesktop = props => {
     onLogout,
     onSearchSubmit,
     initialSearchFormValues,
+    onUpdateProfile
   } = props;
   const [mounted, setMounted] = useState(false);
 
@@ -248,7 +270,12 @@ const TopbarDesktop = props => {
   ) : null;
 
   const profileMenuMaybe = authenticatedOnClientSide ? (
-    <ProfileMenu currentPage={currentPage} currentUser={currentUser} onLogout={onLogout} />
+    <ProfileMenu
+      currentPage={currentPage}
+      currentUser={currentUser}
+      onLogout={onLogout}
+      onUpdateProfile={onUpdateProfile}
+    />
   ) : null;
 
   const signupLinkMaybe = isAuthenticatedOrJustHydrated ? null : <SignupLink />;
@@ -308,6 +335,7 @@ TopbarDesktop.propTypes = {
   initialSearchFormValues: object,
   intl: intlShape.isRequired,
   config: object,
+  onUpdateProfile: func.isRequired,
 };
 
 export default TopbarDesktop;

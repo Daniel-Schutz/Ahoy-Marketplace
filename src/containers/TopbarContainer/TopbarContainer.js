@@ -10,7 +10,7 @@ import { propTypes } from '../../util/types';
 import { sendVerificationEmail, hasCurrentUserErrors } from '../../ducks/user.duck';
 import { logout, authenticationInProgress } from '../../ducks/auth.duck';
 import { manageDisableScrolling } from '../../ducks/ui.duck';
-
+import { updateProfile } from '../ProfileSettingsPage/ProfileSettingsPage.duck';
 const Topbar = loadable(() => import(/* webpackChunkName: "Topbar" */ './Topbar/Topbar'));
 
 export const TopbarContainerComponent = props => {
@@ -125,6 +125,7 @@ const mapDispatchToProps = dispatch => ({
   onManageDisableScrolling: (componentId, disableScrolling) =>
     dispatch(manageDisableScrolling(componentId, disableScrolling)),
   onResendVerificationEmail: () => dispatch(sendVerificationEmail()),
+  onUpdateProfile: (params) => dispatch(updateProfile(params))
 });
 
 // Note: it is important that the withRouter HOC is **outside** the
