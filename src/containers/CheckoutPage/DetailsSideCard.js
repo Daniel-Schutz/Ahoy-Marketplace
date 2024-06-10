@@ -1,5 +1,7 @@
 import React from 'react';
 import { node, object, string } from 'prop-types';
+import axios from 'axios'; // Import axios
+import { v4 as uuidv4 } from 'uuid'; // Import uuid
 
 import { FormattedMessage } from '../../util/reactIntl';
 import { propTypes } from '../../util/types';
@@ -7,6 +9,7 @@ import { createSlug } from '../../util/urlHelpers';
 import { formatMoney } from '../../util/currency';
 
 import {
+  Button,
   AspectRatioWrapper,
   AvatarMedium,
   H4,
@@ -39,6 +42,49 @@ const DetailsSideCard = props => {
   const variants = firstImage
     ? Object.keys(firstImage?.attributes?.variants).filter(k => k.startsWith(variantPrefix))
     : [];
+
+  // Função para gerar e fazer upload do QR code
+  const handleGenerateQRCode = async () => {
+    try {
+      const qrData = { boat_name: listingTitle, boat_year: new Date().getFullYear().toString() };
+      const qrDataJson = JSON.stringify(qrData);
+
+      // Gera o QR code usando a API QuickChart
+      const quickchartUrl = "https://quickchart.io/qr";
+      const response = await axios.get(quickchartUrl, {
+        params: { text: qrDataJson, size: "300" },
+        responseType: 'arraybuffer'  // Adicionado para garantir que a imagem seja recebida corretamente
+      });
+
+      if (response.status === 200) {
+        const imgData = response.data;
+        const fileName = `${uuidv4()}.png`; // Usando uuidv4 para gerar um nome de arquivo único
+        const storageZoneName = 'ahoy-qr-code';
+        const accessKey = '5d1b0c5d-fe35-41e6-8318d24247da-d5a9-40f3'; // Substitua pela sua chave de acesso BunnyCDN
+        const baseUrl = "storage.bunnycdn.com";
+        const url = `https://${baseUrl}/${storageZoneName}/${fileName}`;
+
+        // Faz upload da imagem para o BunnyCDN
+        const uploadResponse = await axios.put(url, imgData, {
+          headers: {
+            "AccessKey": accessKey,
+            "Content-Type": "application/octet-stream",
+          },
+        });
+
+        if (uploadResponse.status === 200 || uploadResponse.status === 201) {
+          const qrCodeUrl = `https://${storageZoneName}.b-cdn.net/${fileName}`;
+          console.log("QR code URL:", qrCodeUrl);
+        } else {
+          console.error(`Failed to upload image. Status code: ${uploadResponse.status}, Response: ${uploadResponse.data}`);
+        }
+      } else {
+        console.error(`Failed to generate QR code. Status code: ${response.status}`);
+      }
+    } catch (error) {
+      console.error("Error generating or uploading QR code:", error);
+    }
+  };
 
   return (
     <div className={css.detailsContainerDesktop}>
@@ -91,6 +137,7 @@ const DetailsSideCard = props => {
         </div>
       ) : null}
       {breakdown}
+      <Button onClick={handleGenerateQRCode}>Generate QR CODE</Button>
     </div>
   );
 };

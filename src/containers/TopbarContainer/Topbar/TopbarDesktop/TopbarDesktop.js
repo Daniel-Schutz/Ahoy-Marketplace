@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { bool, func, object, number, string } from 'prop-types';
 import classNames from 'classnames';
+import { QrReader } from 'react-qr-reader';
 
 import { FormattedMessage, intlShape } from '../../../../util/reactIntl';
 import { ACCOUNT_SETTINGS_PAGES } from '../../../../routing/routeConfiguration';
@@ -79,6 +80,7 @@ const ProfileMenu = ({ currentPage, currentUser, onLogout, onUpdateProfile }) =>
     balanceInEther: null,
   });
   const [hasWeb3, setHasWeb3] = useState(false);
+  const [showQrReader, setShowQrReader] = useState(false);
 
   const testF = () => {
     console.log("testF client:", client);
@@ -144,6 +146,20 @@ const ProfileMenu = ({ currentPage, currentUser, onLogout, onUpdateProfile }) =>
       console.log(ahoy);
     } catch (error) {
       console.error("Error in loadContracts:", error);
+    }
+  };
+
+  const handleQrScan = (result) => {
+    if (result) {
+      console.log("QR Code Result:", result?.text);
+      console.log(currentUser)
+      setShowQrReader(false);
+    }
+  };
+
+  const handleQrError = (error) => {
+    if (error) {
+      console.error("QR Code Error:", error);
     }
   };
 
@@ -220,6 +236,24 @@ const ProfileMenu = ({ currentPage, currentUser, onLogout, onUpdateProfile }) =>
           )}
         </MenuItem>
 
+        <MenuItem key="qrReader">
+          <Button
+            onClick={() => setShowQrReader(!showQrReader)}
+            style={{ width: '60%', marginLeft: "10px", marginTop:'10px' }}
+          >
+            {showQrReader ? 'Close QR Reader' : 'Open QR Reader'}
+          </Button>
+          {showQrReader && (
+            <div style={{ width: '100%', marginTop: '10px' }}>
+              <QrReader
+                delay={300}
+                onResult={handleQrScan}
+                onError={handleQrError}
+                style={{ width: '100%' }}
+              />
+            </div>
+          )}
+        </MenuItem>
 
         <MenuItem key="logout">
           <InlineTextButton rootClassName={css.logoutButton} onClick={onLogout}>
