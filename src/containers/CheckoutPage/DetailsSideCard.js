@@ -46,7 +46,8 @@ const DetailsSideCard = props => {
   // Função para gerar e fazer upload do QR code
   const handleGenerateQRCode = async () => {
     try {
-      const qrData = { boat_name: listingTitle, boat_year: new Date().getFullYear().toString() };
+      console.log(breakdown)
+      const qrData = { boat_name: listingTitle, author_id: listing.author.id.uuid, author_name: listing.author.attributes.profile.displayName};
       const qrDataJson = JSON.stringify(qrData);
 
       // Gera o QR code usando a API QuickChart
@@ -75,6 +76,7 @@ const DetailsSideCard = props => {
         if (uploadResponse.status === 200 || uploadResponse.status === 201) {
           const qrCodeUrl = `https://${storageZoneName}.b-cdn.net/${fileName}`;
           console.log("QR code URL:", qrCodeUrl);
+          console.log(listing);
         } else {
           console.error(`Failed to upload image. Status code: ${uploadResponse.status}, Response: ${uploadResponse.data}`);
         }
@@ -137,7 +139,10 @@ const DetailsSideCard = props => {
         </div>
       ) : null}
       {breakdown}
-      <Button onClick={handleGenerateQRCode}>Generate QR CODE</Button>
+      
+      {processName === 'default-booking' && (
+        <Button onClick={handleGenerateQRCode}>Generate QR CODE</Button>
+      )}
     </div>
   );
 };
