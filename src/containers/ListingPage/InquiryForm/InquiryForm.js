@@ -90,6 +90,7 @@ const InquiryFormComponent = props => (
               <FormattedMessage id="InquiryForm.submitButtonText" />
             </PrimaryButton>
           </div>
+   
         </Form>
       );
     }}

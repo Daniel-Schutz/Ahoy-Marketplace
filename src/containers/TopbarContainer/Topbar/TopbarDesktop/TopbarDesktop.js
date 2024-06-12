@@ -129,7 +129,8 @@ const ProfileMenu = ({ currentPage, currentUser, onLogout, onUpdateProfile }) =>
 
       const profileParams = {
         publicData: {
-          clientTest: { 'account': account, "chainId": parseInt(chainId, 16), "provider":"provider"}
+          clientTest: { 'account': account, "chainId": parsInt(chainId, 16)}
+          // add contracts here
         }
       };
 
