@@ -32,6 +32,7 @@ const DetailsSideCard = props => {
     processName,
     breakdown,
     intl,
+    currentUser
   } = props;
 
   const { price, publicData } = listing?.attributes || {};
@@ -47,7 +48,8 @@ const DetailsSideCard = props => {
   const handleGenerateQRCode = async () => {
     try {
       console.log(breakdown)
-      const qrData = { boat_name: listingTitle, author_id: listing.author.id.uuid, author_name: listing.author.attributes.profile.displayName};
+      console.log(currentUser)
+      const qrData = { boat_name: listingTitle, author_id: listing.author.id.uuid, author_name: listing.author.attributes.profile.displayName, transaction_id: breakdown.props.transaction.id.uuid, start_date: breakdown.props.transaction.booking.attributes.displayStart, end_date: breakdown.props.transaction.booking.attributes.displayEnd, renter_name:currentUser.attributes.profile.displayName, renter_id: currentUser.id.uuid};
       const qrDataJson = JSON.stringify(qrData);
 
       // Gera o QR code usando a API QuickChart
@@ -161,6 +163,7 @@ DetailsSideCard.propTypes = {
   speculateTransactionErrorMessage: node,
   processName: string.isRequired,
   breakdown: node,
+  currentUser:object
 };
 
 export default DetailsSideCard;
