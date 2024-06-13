@@ -26,6 +26,7 @@ import css from './ProfileSettingsForm.module.css';
 //contract imports 
 import AhoyAddress from '../../../contractsData/Ahoy-address.json'
 import AhoyAbi from '../../../contractsData/Ahoy.json'
+import { useWeb3 } from '../../../context/Web3';
 
 const ACCEPT_IMAGES = 'image/*';
 const UPLOAD_CHANGE_DELAY = 2000; // Show spinner so that browser has time to load img srcset
@@ -190,62 +191,9 @@ class ProfileSettingsFormComponent extends Component {
           const pristineSinceLastSubmit = submittedOnce && isEqual(values, this.submittedValues);
           const submitDisabled =
             invalid || pristine || pristineSinceLastSubmit || uploadInProgress || submitInProgress;
+          const { client, hasWeb3, web3Handler } = useWeb3();
+          console.log({client})
 
-          const [client, setClient] = useState({
-              account: null,
-              signer: null,
-              chainId: null,
-              provider: null
-          });
-          const [hasWeb3, setHasWeb3] = useState(false);
-
-          const web3Handler = async () => {
-            var account; var chainId;
-
-            await window.ethereum.request({ method: 'eth_requestAccounts' })
-            .then((accounts) => {
-              account = accounts[0] });
-      
-            await window.ethereum.request({ method: 'eth_chainId' })
-            .then((res) => {
-              chainId = res });
-
-              const provider = new ethers.providers.Web3Provider(window.ethereum);
-              const balance = await provider.getBalance(account);
-              let balanceInEther = ethers.utils.formatEther(balance);
-              balanceInEther = Math.floor(balanceInEther)
-              
-              const signer = await provider.getSigner();
-        
-              setClient({
-                account: account,
-                signer: signer,
-                chainId: parseInt(chainId, 16),
-                provider: provider,
-                balanceInEther,
-              })
-
-              loadContracts(client.account)
-          }
-
-          const loadContracts = async (signer) => {
-            // Get deployed copies of contracts
-            const ahoy = new ethers.Contract(AhoyAddress.address, AhoyAbi.abi, signer)
-            // const ahoyRentals = new ethers.Contract(AhoyRentalAddress.address, AhoyRentalAbi.abi, signer)
-            // console.log("Ahoy contract address:", ahoy.address);
-            // console.log("Ahoy Rental contract address:", ahoyRentals.address);
-        
-            // const owner = await ahoyRentals.getOwner();
-        
-            console.log(ahoy)
-          }
-
-          if (window.ethereum) {
-            window.ethereum.on('chainChanged', () => {window.location.reload()});
-            window.ethereum.on('accountsChanged', () => {window.location.reload()});
-            if(!hasWeb3) { setHasWeb3(true); }
-            console.log(client)
-          }
 
           return (
             <Form
@@ -329,7 +277,7 @@ class ProfileSettingsFormComponent extends Component {
                 <Button href="https://metamask.io/" target="_blank" rel="noopener noreferrer">
                   Download MetaMask
                 </Button>
-              ) : client.account ? (
+              ) : client ? (
                 <div>
                   <Button disabled style={{ backgroundColor: 'green' }}>
                     {client.account.slice(0, 6) + '...' + client.account.slice(-4)}
