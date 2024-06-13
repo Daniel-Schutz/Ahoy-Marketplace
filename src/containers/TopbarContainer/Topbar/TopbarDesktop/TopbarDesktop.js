@@ -28,6 +28,7 @@ import TopbarSearchForm from '../TopbarSearchForm/TopbarSearchForm';
 import CustomLinksMenu from './CustomLinksMenu/CustomLinksMenu';
 
 import css from './TopbarDesktop.module.css';
+import { useWeb3 } from '../../../../context/Web3';
 
 const SignupLink = () => {
   return (
@@ -66,88 +67,13 @@ const InboxLink = ({ notificationCount, currentUserHasListings }) => {
 };
 
 const ProfileMenu = ({ currentPage, currentUser, onLogout, onUpdateProfile }) => {
+  const { hasWeb3, client, web3Handler } = useWeb3();
+  const [showQrReader, setShowQrReader] = useState(false);
+  console.log({client})
   const currentPageClass = page => {
     const isAccountSettingsPage =
       page === 'AccountSettingsPage' && ACCOUNT_SETTINGS_PAGES.includes(currentPage);
     return currentPage === page || isAccountSettingsPage ? css.currentPage : null;
-  };
-
-  const [client, setClient] = useState({
-    account: null,
-    signer: null,
-    chainId: null,
-    provider: null,
-    balanceInEther: null,
-  });
-  const [hasWeb3, setHasWeb3] = useState(false);
-  const [showQrReader, setShowQrReader] = useState(false);
-
-  const testF = () => {
-    console.log("testF client:", client);
-    const profileParams = {
-      publicData: {
-        clientTest: "client"
-      }
-    };
-    onUpdateProfile(profileParams);
-    console.log("Current user:", currentUser);
-  };
-
-  const web3Handler = async () => {
-    try {
-      let account;
-      let chainId;
-
-      await window.ethereum.request({ method: 'eth_requestAccounts' })
-        .then((accounts) => {
-          account = accounts[0];
-        });
-
-      await window.ethereum.request({ method: 'eth_chainId' })
-        .then((res) => {
-          chainId = res;
-        });
-
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-      console.log(provider)
-      const balance = await provider.getBalance(account);
-      let balanceInEther = ethers.utils.formatEther(balance);
-      balanceInEther = Math.floor(balanceInEther);
-
-      const signer = await provider.getSigner();
-
-      const updatedClient = {
-        account: account,
-        signer: signer,
-        chainId: parseInt(chainId, 16),
-        provider: provider,
-        balanceInEther,
-      };
-
-      setClient(updatedClient);
-      console.log("Updated client:", signer);
-
-      const profileParams = {
-        publicData: {
-          clientTest: { 'account': account, "chainId": parsInt(chainId, 16)}
-          // add contracts here
-        }
-      };
-
-      onUpdateProfile(profileParams);
-      loadContracts(signer);
-    } catch (error) {
-      console.error("Error in web3Handler:", error);
-    }
-  };
-
-  const loadContracts = async (signer) => {
-    try {
-      const ahoy = new ethers.Contract(AhoyAddress.address, AhoyAbi.abi, signer);
-      console.log(ahoy);
-    } catch (error) {
-      console.error("Error in loadContracts:", error);
-    }
   };
 
   const handleQrScan = (result) => {
@@ -163,14 +89,6 @@ const ProfileMenu = ({ currentPage, currentUser, onLogout, onUpdateProfile }) =>
       console.error("QR Code Error:", error);
     }
   };
-
-  useEffect(() => {
-    if (window.ethereum) {
-      window.ethereum.on('chainChanged', () => { window.location.reload(); });
-      window.ethereum.on('accountsChanged', () => { window.location.reload(); });
-      if (!hasWeb3) { setHasWeb3(true); }
-    }
-  }, [hasWeb3]);
 
   return (
     <Menu>
@@ -215,7 +133,7 @@ const ProfileMenu = ({ currentPage, currentUser, onLogout, onUpdateProfile }) =>
             >
               Download MetaMask
             </Button>
-          ) : client.account ? (
+          ) : client ? (
             <div>
               <Button
                 disabled
