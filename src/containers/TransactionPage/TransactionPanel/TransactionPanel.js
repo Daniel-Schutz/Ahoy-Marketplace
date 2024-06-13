@@ -206,6 +206,7 @@ export class TransactionPanelComponent extends Component {
                 <AvatarLarge user={customer} className={css.avatarDesktop} />
               </div>
             ) : null}
+            
 
             <PanelHeading
               processName={stateData.processName}
@@ -224,6 +225,18 @@ export class TransactionPanelComponent extends Component {
               listingTitle={listingTitle}
               listingDeleted={listingDeleted}
             />
+
+             {/* Adição do QR Code para check-in/check-out */}
+             <div className={css.qrCodeSection}>
+              <h4 className={css.qrCodeTitle}>
+              <FormattedMessage id="TransactionPanel.qrCodeTitle" />
+              </h4>
+              <img
+                src="https://ahoy-qr-code.b-cdn.net/b3a1e41d-4dd6-4915-80d2-e2dff7232857.png"
+                alt="QR Code for Check-In/Check-Out"
+                className={css.qrCodeImage}
+              />
+             </div>
 
             <InquiryMessageMaybe
               protectedData={protectedData}
@@ -271,7 +284,7 @@ export class TransactionPanelComponent extends Component {
                 />
               </div>
             ) : null}
-
+            
             <FeedSection
               rootClassName={css.feedContainer}
               hasMessages={messages.length > 0}
@@ -301,6 +314,7 @@ export class TransactionPanelComponent extends Component {
               </div>
             )}
 
+            
             {stateData.showActionButtons ? (
               <>
                 <div className={css.mobileActionButtonSpacer}></div>
@@ -339,6 +353,7 @@ export class TransactionPanelComponent extends Component {
                   price={listing?.attributes?.price}
                   intl={intl}
                 />
+                
                 {stateData.showOrderPanel ? orderPanel : null}
                 <BreakdownMaybe
                   className={css.breakdownContainer}

@@ -2,14 +2,21 @@
  *  TopbarMobileMenu prints the menu content for authenticated user or
  * shows login actions for those who are not authenticated.
  */
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
+
+//contract imports 
+import AhoyAddress from '../../../../contractsData/Ahoy-address.json'
+import AhoyAbi from '../../../../contractsData/Ahoy.json'
+import { ethers } from "ethers";
 
 import { ACCOUNT_SETTINGS_PAGES } from '../../../../routing/routeConfiguration';
 import { FormattedMessage } from '../../../../util/reactIntl';
 import { propTypes } from '../../../../util/types';
 import { ensureCurrentUser } from '../../../../util/data';
+
+
 
 import {
   AvatarLarge,
@@ -17,9 +24,11 @@ import {
   InlineTextButton,
   NamedLink,
   NotificationBadge,
+  Button,
 } from '../../../../components';
 
 import css from './TopbarMobileMenu.module.css';
+import { useWeb3 } from '../../../../context/Web3';
 
 const CustomLinkComponent = ({ linkConfig, currentPage }) => {
   const { group, text, type, href, route } = linkConfig;
@@ -132,6 +141,8 @@ const TopbarMobileMenu = props => {
     return currentPage === page || isAccountSettingsPage || isInboxPage ? css.currentPage : null;
   };
   const inboxTab = currentUserHasListings ? 'sales' : 'orders';
+  const { hasWeb3, client, web3Handler } = useWeb3();
+
 
   return (
     <div className={css.root}>
@@ -171,6 +182,36 @@ const TopbarMobileMenu = props => {
           >
             <FormattedMessage id="TopbarMobileMenu.accountSettingsLink" />
           </NamedLink>
+          {!hasWeb3 ? (
+            <Button 
+              href="https://metamask.io/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+
+            >
+              Download MetaMask
+            </Button>
+          ) : client ? (
+            <div>
+              <Button 
+                disabled 
+                style={{ 
+                  backgroundColor: 'green',
+      
+                }}
+              >
+                {client.account.slice(0, 6) + '...' + client.account.slice(-4)}
+              </Button>
+            </div>
+          ) : (
+            <Button 
+              onClick={web3Handler}
+            >
+              Connect Wallet
+            </Button>
+          )}
+
+          
         </div>
         <div className={css.customLinksWrapper}>{extraLinks}</div>
         <div className={css.spacer} />

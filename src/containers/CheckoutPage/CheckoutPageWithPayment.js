@@ -500,6 +500,7 @@ export const CheckoutPageWithPayment = props => {
           processName={processName}
           breakdown={breakdown}
           intl={intl}
+          currentUser={currentUser} 
         />
       </div>
     </Page>

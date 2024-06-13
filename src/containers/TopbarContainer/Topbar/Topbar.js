@@ -219,6 +219,7 @@ class TopbarComponent extends Component {
       showGenericError,
       config,
       routeConfiguration,
+      onUpdateProfile
     } = this.props;
 
     const { mobilemenu, mobilesearch, keywords, address, origin, bounds } = parse(location.search, {
@@ -319,6 +320,7 @@ class TopbarComponent extends Component {
             onSearchSubmit={this.handleSubmit}
             config={config}
             customLinks={customLinks}
+            onUpdateProfile={onUpdateProfile}
           />
         </div>
         <Modal

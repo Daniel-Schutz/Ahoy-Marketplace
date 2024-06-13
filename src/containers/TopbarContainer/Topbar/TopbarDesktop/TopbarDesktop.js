@@ -1,10 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { bool, func, object, number, string } from 'prop-types';
 import classNames from 'classnames';
+import { QrReader } from 'react-qr-reader';
 
 import { FormattedMessage, intlShape } from '../../../../util/reactIntl';
 import { ACCOUNT_SETTINGS_PAGES } from '../../../../routing/routeConfiguration';
 import { propTypes } from '../../../../util/types';
+
+// Contract imports 
+import AhoyAddress from '../../../../contractsData/Ahoy-address.json';
+import AhoyAbi from '../../../../contractsData/Ahoy.json';
+import { ethers } from "ethers";
+
 import {
   Avatar,
   InlineTextButton,
@@ -14,12 +21,14 @@ import {
   MenuContent,
   MenuItem,
   NamedLink,
+  Button,
 } from '../../../../components';
 
 import TopbarSearchForm from '../TopbarSearchForm/TopbarSearchForm';
 import CustomLinksMenu from './CustomLinksMenu/CustomLinksMenu';
 
 import css from './TopbarDesktop.module.css';
+import { useWeb3 } from '../../../../context/Web3';
 
 const SignupLink = () => {
   return (
@@ -57,11 +66,28 @@ const InboxLink = ({ notificationCount, currentUserHasListings }) => {
   );
 };
 
-const ProfileMenu = ({ currentPage, currentUser, onLogout }) => {
+const ProfileMenu = ({ currentPage, currentUser, onLogout, onUpdateProfile }) => {
+  const { hasWeb3, client, web3Handler } = useWeb3();
+  const [showQrReader, setShowQrReader] = useState(false);
+  console.log({client})
   const currentPageClass = page => {
     const isAccountSettingsPage =
       page === 'AccountSettingsPage' && ACCOUNT_SETTINGS_PAGES.includes(currentPage);
     return currentPage === page || isAccountSettingsPage ? css.currentPage : null;
+  };
+
+  const handleQrScan = (result) => {
+    if (result) {
+      console.log("QR Code Result:", result?.text);
+      console.log(currentUser)
+      setShowQrReader(false);
+    }
+  };
+
+  const handleQrError = (error) => {
+    if (error) {
+      console.error("QR Code Error:", error);
+    }
   };
 
   return (
@@ -97,6 +123,57 @@ const ProfileMenu = ({ currentPage, currentUser, onLogout }) => {
             <FormattedMessage id="TopbarDesktop.accountSettingsLink" />
           </NamedLink>
         </MenuItem>
+        <MenuItem key="button">
+          {!hasWeb3 ? (
+            <Button
+              href="https://metamask.io/"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ width: '60%', marginLeft: "10px" }}
+            >
+              Download MetaMask
+            </Button>
+          ) : client ? (
+            <div>
+              <Button
+                disabled
+                style={{
+                  backgroundColor: 'green',
+                  width: '60%', marginLeft: "10px"
+                }}
+              >
+                {client.account.slice(0, 6) + '...' + client.account.slice(-4)}
+              </Button>
+            </div>
+          ) : (
+            <Button
+              onClick={web3Handler}
+              style={{ width: '60%', marginLeft: "10px" }}
+            >
+              Connect Wallet
+            </Button>
+          )}
+        </MenuItem>
+
+        <MenuItem key="qrReader">
+          <Button
+            onClick={() => setShowQrReader(!showQrReader)}
+            style={{ width: '60%', marginLeft: "10px", marginTop:'10px' }}
+          >
+            {showQrReader ? 'Close QR Reader' : 'Open QR Reader'}
+          </Button>
+          {showQrReader && (
+            <div style={{ width: '100%', marginTop: '10px' }}>
+              <QrReader
+                delay={300}
+                onResult={handleQrScan}
+                onError={handleQrError}
+                style={{ width: '100%' }}
+              />
+            </div>
+          )}
+        </MenuItem>
+
         <MenuItem key="logout">
           <InlineTextButton rootClassName={css.logoutButton} onClick={onLogout}>
             <span className={css.menuItemBorder} />
@@ -123,6 +200,7 @@ const TopbarDesktop = props => {
     onLogout,
     onSearchSubmit,
     initialSearchFormValues,
+    onUpdateProfile
   } = props;
   const [mounted, setMounted] = useState(false);
 
@@ -145,7 +223,12 @@ const TopbarDesktop = props => {
   ) : null;
 
   const profileMenuMaybe = authenticatedOnClientSide ? (
-    <ProfileMenu currentPage={currentPage} currentUser={currentUser} onLogout={onLogout} />
+    <ProfileMenu
+      currentPage={currentPage}
+      currentUser={currentUser}
+      onLogout={onLogout}
+      onUpdateProfile={onUpdateProfile}
+    />
   ) : null;
 
   const signupLinkMaybe = isAuthenticatedOrJustHydrated ? null : <SignupLink />;
@@ -205,6 +288,7 @@ TopbarDesktop.propTypes = {
   initialSearchFormValues: object,
   intl: intlShape.isRequired,
   config: object,
+  onUpdateProfile: func.isRequired,
 };
 
 export default TopbarDesktop;
