@@ -16,7 +16,7 @@ export const Web3Provider = ({ children }) => {
   const [rentalContract, setRentalContract] = useState(null);
   const [escrowContract, setEscrowContract] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [qrCode, setQrCode] = useState('hello')
+
 
   useEffect(() => {
     if (window.ethereum) {
@@ -74,7 +74,7 @@ export const Web3Provider = ({ children }) => {
   
 
   return (
-    <Web3Context.Provider value={{ client, hasWeb3, web3Handler, boatsContract, rentalContract, escrowContract, loading, qrCode, setQrCode }}>
+    <Web3Context.Provider value={{ client, hasWeb3, web3Handler, boatsContract, rentalContract, escrowContract, loading}}>
       {children}
     </Web3Context.Provider>
   );

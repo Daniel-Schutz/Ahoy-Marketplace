@@ -33,6 +33,9 @@ import MobileListingImage from './MobileListingImage';
 import MobileOrderBreakdown from './MobileOrderBreakdown';
 
 import css from './CheckoutPage.module.css';
+import { useWeb3 } from '../../context/Web3';
+import axios from 'axios'; 
+import { v4 as uuidv4 } from 'uuid'; 
 
 // Stripe PaymentIntent statuses, where user actions are already completed
 // https://stripe.com/docs/payments/payment-intents/status
@@ -65,7 +68,7 @@ const paymentFlow = (selectedPaymentMethod, saveAfterOnetimePayment) => {
  * @param {Object} config app-wide configs. This contains hosted configs too.
  * @returns orderParams.
  */
-const getOrderParams = (pageData, shippingDetails, optionalPaymentParams, config) => {
+const getOrderParams = (pageData, shippingDetails, optionalPaymentParams, config, url = null) => {
   const quantity = pageData.orderData?.quantity;
   const quantityMaybe = quantity ? { quantity } : {};
   const deliveryMethod = pageData.orderData?.deliveryMethod;
@@ -77,6 +80,7 @@ const getOrderParams = (pageData, shippingDetails, optionalPaymentParams, config
       ...getTransactionTypeData(listingType, unitType, config),
       ...deliveryMethodMaybe,
       ...shippingDetails,
+      ...(url ? { qrCodeUrl: url } : {}),
     },
   };
 
@@ -92,6 +96,8 @@ const getOrderParams = (pageData, shippingDetails, optionalPaymentParams, config
   };
   return orderParams;
 };
+
+
 
 const fetchSpeculatedTransactionIfNeeded = (orderParams, pageData, fetchSpeculatedTransaction) => {
   const tx = pageData ? pageData.transaction : null;
@@ -165,8 +171,54 @@ export const loadInitialDataForStripePayments = ({
 
   fetchSpeculatedTransactionIfNeeded(orderParams, pageData, fetchSpeculatedTransaction);
 };
+const handleGenerateQRCode = async (pageData,currentUser) => {
+  try {
+    const { listing, transaction, orderData } = pageData;
+    console.log(pageData);
+    const qrData = { boat_name: listing.attributes.title, author_id: listing.author.id.uuid, author_name: listing.author.attributes.profile.displayName, start_date: orderData.bookingDates.bookingStart, end_date: orderData.bookingDates.bookingEnd, renter_name:currentUser.attributes.profile.displayName, renter_id: currentUser.id.uuid};
+    const qrDataJson = JSON.stringify(qrData);
 
-const handleSubmit = (values, process, props, stripe, submitting, setSubmitting) => {
+
+    const quickchartUrl = "https://quickchart.io/qr";
+    const response = await axios.get(quickchartUrl, {
+      params: { text: qrDataJson, size: "300" },
+      responseType: 'arraybuffer' 
+    });
+
+    if (response.status === 200) {
+      const imgData = response.data;
+      const fileName = `${uuidv4()}.png`;  
+      const storageZoneName = 'ahoy-qr-code';
+      const accessKey = '5d1b0c5d-fe35-41e6-8318d24247da-d5a9-40f3';  
+      const baseUrl = "storage.bunnycdn.com";
+      const url = `https://${baseUrl}/${storageZoneName}/${fileName}`;
+
+      // Faz upload da imagem para o BunnyCDN
+      const uploadResponse = await axios.put(url, imgData, {
+        headers: {
+          "AccessKey": accessKey,
+          "Content-Type": "application/octet-stream",
+        },
+      });
+
+      if (uploadResponse.status === 200 || uploadResponse.status === 201) {
+        const qrCodeUrl = `https://${storageZoneName}.b-cdn.net/${fileName}`;
+        console.log("QR code URL:", qrCodeUrl);
+        return qrCodeUrl;
+      
+      } else {
+        console.error(`Failed to upload image. Status code: ${uploadResponse.status}, Response: ${uploadResponse.data}`);
+      }
+    } else {
+      console.error(`Failed to generate QR code. Status code: ${response.status}`);
+    }
+  } catch (error) {
+    console.error("Error generating or uploading QR code:", error);
+  }
+  return null;
+};
+
+const handleSubmit = async (values, process, props, stripe, submitting, setSubmitting) => {
   if (submitting) {
     return;
   }
@@ -191,6 +243,14 @@ const handleSubmit = (values, process, props, stripe, submitting, setSubmitting)
     setPageData,
     sessionStorageKey,
   } = props;
+
+  const qrCodeUrl = await handleGenerateQRCode(pageData,currentUser); // Gera o QR code e obtém a URL
+  if (!qrCodeUrl) {
+    setSubmitting(false);
+    return;
+  }
+
+
   const { card, message, paymentMethod: selectedPaymentMethod, formValues } = values;
   const { saveAfterOnetimePayment: saveAfterOnetimePaymentRaw } = formValues;
 
@@ -243,7 +303,7 @@ const handleSubmit = (values, process, props, stripe, submitting, setSubmitting)
 
   // These are the order parameters for the first payment-related transition
   // which is either initiate-transition or initiate-transition-after-enquiry
-  const orderParams = getOrderParams(pageData, shippingDetails, optionalPaymentParams, config);
+  const orderParams = getOrderParams(pageData, shippingDetails, optionalPaymentParams, config, qrCodeUrl);
 
   // There are multiple XHR calls that needs to be made against Stripe API and Sharetribe Marketplace API on checkout with payments
   processCheckoutWithPayment(orderParams, requestPaymentParams)
@@ -417,6 +477,11 @@ export const CheckoutPageWithPayment = props => {
     orderData?.deliveryMethod === 'shipping' &&
     !hasTransactionPassedPendingPayment(existingTransaction, process);
 
+ 
+
+ 
+    
+
   return (
     <Page title={title} scrollingDisabled={scrollingDisabled}>
       <CustomTopbar intl={intl} linkToExternalSite={config?.topbar?.logoLink} />
@@ -486,6 +551,7 @@ export const CheckoutPageWithPayment = props => {
                 isFuzzyLocation={config.maps.fuzzy.enabled}
               />
             ) : null}
+ 
           </section>
         </div>
 

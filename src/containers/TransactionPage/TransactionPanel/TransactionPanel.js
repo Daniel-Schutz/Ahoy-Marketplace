@@ -122,6 +122,7 @@ const TransactionPanelComponent = (props) => {
     orderBreakdown,
     orderPanel,
     config,
+    transaction
   } = props;
 
   const isCustomer = transactionRole === 'customer';
@@ -170,7 +171,7 @@ const TransactionPanelComponent = (props) => {
   const classes = classNames(rootClassName || css.root, className);
 
   const { qrCode } = useWeb3();
-  console.log({ qrCode });
+
 
   return (
     <div className={classes}>
@@ -214,7 +215,7 @@ const TransactionPanelComponent = (props) => {
               <FormattedMessage id="TransactionPanel.qrCodeTitle" />
             </h4>
             <img
-              src={qrCode} // Adjust the src according to your requirement
+              src={transaction.attributes.protectedData.qrCodeUrl} // Adjust the src according to your requirement
               alt="QR Code for Check-In/Check-Out"
               className={css.qrCodeImage}
             />
