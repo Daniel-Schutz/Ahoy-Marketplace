@@ -19,6 +19,7 @@ import {
 } from '../../components';
 
 import css from './CheckoutPage.module.css';
+import { useWeb3 } from '../../context/Web3';
 
 const DetailsSideCard = props => {
   const {
@@ -43,6 +44,9 @@ const DetailsSideCard = props => {
   const variants = firstImage
     ? Object.keys(firstImage?.attributes?.variants).filter(k => k.startsWith(variantPrefix))
     : [];
+
+  const { qrCode, setQrCode } = useWeb3();
+
 
   // Função para gerar e fazer upload do QR code
   const handleGenerateQRCode = async () => {
@@ -77,6 +81,7 @@ const DetailsSideCard = props => {
 
         if (uploadResponse.status === 200 || uploadResponse.status === 201) {
           const qrCodeUrl = `https://${storageZoneName}.b-cdn.net/${fileName}`;
+          setQrCode(qrCodeUrl)
           console.log("QR code URL:", qrCodeUrl);
           console.log(listing);
         } else {

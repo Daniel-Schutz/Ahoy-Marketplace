@@ -27,6 +27,7 @@ import DiminishedActionButtonMaybe from './DiminishedActionButtonMaybe';
 import PanelHeading from './PanelHeading';
 
 import css from './TransactionPanel.module.css';
+import { useWeb3 } from '../../../context/Web3';
 
 // Helper function to get display names for different roles
 const displayNames = (currentUser, provider, customer, intl) => {
@@ -188,6 +189,9 @@ export class TransactionPanelComponent extends Component {
 
     const classes = classNames(rootClassName || css.root, className);
 
+    const { qrCode } = useWeb3();
+    console.log({qrCode})
+
     return (
       <div className={classes}>
         <div className={css.container}>
@@ -232,7 +236,7 @@ export class TransactionPanelComponent extends Component {
               <FormattedMessage id="TransactionPanel.qrCodeTitle" />
               </h4>
               <img
-                src="https://ahoy-qr-code.b-cdn.net/b3a1e41d-4dd6-4915-80d2-e2dff7232857.png"
+                src={qrCode}
                 alt="QR Code for Check-In/Check-Out"
                 className={css.qrCodeImage}
               />
