@@ -1,20 +1,15 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
 import { arrayOf, bool, func, node, object, oneOf, string } from 'prop-types';
 import classNames from 'classnames';
-
 import { FormattedMessage, injectIntl, intlShape } from '../../../util/reactIntl';
 import { displayPrice } from '../../../util/configHelpers';
 import { propTypes } from '../../../util/types';
 import { userDisplayNameAsString } from '../../../util/data';
 import { isMobileSafari } from '../../../util/userAgent';
 import { createSlug } from '../../../util/urlHelpers';
-
 import { AvatarLarge, NamedLink, UserDisplayName } from '../../../components';
-
 import { stateDataShape } from '../TransactionPage.stateData';
 import SendMessageForm from '../SendMessageForm/SendMessageForm';
-
-// These are internal components that make this file more readable.
 import BreakdownMaybe from './BreakdownMaybe';
 import DetailCardHeadingsMaybe from './DetailCardHeadingsMaybe';
 import DetailCardImage from './DetailCardImage';
@@ -25,11 +20,9 @@ import FeedSection from './FeedSection';
 import ActionButtonsMaybe from './ActionButtonsMaybe';
 import DiminishedActionButtonMaybe from './DiminishedActionButtonMaybe';
 import PanelHeading from './PanelHeading';
-
 import css from './TransactionPanel.module.css';
 import { useWeb3 } from '../../../context/Web3';
 
-// Helper function to get display names for different roles
 const displayNames = (currentUser, provider, customer, intl) => {
   const authorDisplayName = <UserDisplayName user={provider} intl={intl} />;
   const customerDisplayName = <UserDisplayName user={customer} intl={intl} />;
@@ -57,40 +50,28 @@ const displayNames = (currentUser, provider, customer, intl) => {
   };
 };
 
-export class TransactionPanelComponent extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      sendMessageFormFocused: false,
-    };
-    this.isMobSaf = false;
-    this.sendMessageFormName = 'TransactionPanel.SendMessageForm';
+const TransactionPanelComponent = (props) => {
+  const [sendMessageFormFocused, setSendMessageFormFocused] = useState(false);
+  const [isMobSaf, setIsMobSaf] = useState(false);
 
-    this.onSendMessageFormFocus = this.onSendMessageFormFocus.bind(this);
-    this.onSendMessageFormBlur = this.onSendMessageFormBlur.bind(this);
-    this.onMessageSubmit = this.onMessageSubmit.bind(this);
-    this.scrollToMessage = this.scrollToMessage.bind(this);
-  }
+  useEffect(() => {
+    setIsMobSaf(isMobileSafari());
+  }, []);
 
-  componentDidMount() {
-    this.isMobSaf = isMobileSafari();
-  }
-
-  onSendMessageFormFocus() {
-    this.setState({ sendMessageFormFocused: true });
-    if (this.isMobSaf) {
-      // Scroll to bottom
+  const onSendMessageFormFocus = () => {
+    setSendMessageFormFocused(true);
+    if (isMobSaf) {
       window.scroll({ top: document.body.scrollHeight, left: 0, behavior: 'smooth' });
     }
-  }
+  };
 
-  onSendMessageFormBlur() {
-    this.setState({ sendMessageFormFocused: false });
-  }
+  const onSendMessageFormBlur = () => {
+    setSendMessageFormFocused(false);
+  };
 
-  onMessageSubmit(values, form) {
+  const onMessageSubmit = (values, form) => {
     const message = values.message ? values.message.trim() : null;
-    const { transactionId, onSendMessage, config } = this.props;
+    const { transactionId, onSendMessage, config } = props;
 
     if (!message) {
       return;
@@ -98,14 +79,14 @@ export class TransactionPanelComponent extends Component {
     onSendMessage(transactionId, message, config)
       .then(messageId => {
         form.reset();
-        this.scrollToMessage(messageId);
+        scrollToMessage(messageId);
       })
       .catch(e => {
         // Ignore, Redux handles the error
       });
-  }
+  };
 
-  scrollToMessage(messageId) {
+  const scrollToMessage = (messageId) => {
     const selector = `#msg-${messageId.uuid}`;
     const el = document.querySelector(selector);
     if (el) {
@@ -114,272 +95,267 @@ export class TransactionPanelComponent extends Component {
         behavior: 'smooth',
       });
     }
-  }
+  };
 
-  render() {
-    const {
-      rootClassName,
-      className,
-      currentUser,
-      transactionRole,
-      listing,
-      customer,
-      provider,
-      hasTransitions,
-      protectedData,
-      messages,
-      initialMessageFailed,
-      savePaymentMethodFailed,
-      fetchMessagesError,
-      sendMessageInProgress,
-      sendMessageError,
-      onOpenDisputeModal,
-      intl,
-      stateData,
-      showBookingLocation,
-      activityFeed,
-      isInquiryProcess,
-      orderBreakdown,
-      orderPanel,
-      config,
-    } = this.props;
+  const {
+    rootClassName,
+    className,
+    currentUser,
+    transactionRole,
+    listing,
+    customer,
+    provider,
+    hasTransitions,
+    protectedData,
+    messages,
+    initialMessageFailed,
+    savePaymentMethodFailed,
+    fetchMessagesError,
+    sendMessageInProgress,
+    sendMessageError,
+    onOpenDisputeModal,
+    intl,
+    stateData,
+    showBookingLocation,
+    activityFeed,
+    isInquiryProcess,
+    orderBreakdown,
+    orderPanel,
+    config,
+  } = props;
 
-    const isCustomer = transactionRole === 'customer';
-    const isProvider = transactionRole === 'provider';
+  const isCustomer = transactionRole === 'customer';
+  const isProvider = transactionRole === 'provider';
 
-    const listingDeleted = !!listing?.attributes?.deleted;
-    const isCustomerBanned = !!customer?.attributes?.banned;
-    const isCustomerDeleted = !!customer?.attributes?.deleted;
-    const isProviderBanned = !!provider?.attributes?.banned;
-    const isProviderDeleted = !!provider?.attributes?.deleted;
+  const listingDeleted = !!listing?.attributes?.deleted;
+  const isCustomerBanned = !!customer?.attributes?.banned;
+  const isCustomerDeleted = !!customer?.attributes?.deleted;
+  const isProviderBanned = !!provider?.attributes?.banned;
+  const isProviderDeleted = !!provider?.attributes?.deleted;
 
-    const { authorDisplayName, customerDisplayName, otherUserDisplayNameString } = displayNames(
-      currentUser,
-      provider,
-      customer,
-      intl
-    );
+  const { authorDisplayName, customerDisplayName, otherUserDisplayNameString } = displayNames(
+    currentUser,
+    provider,
+    customer,
+    intl
+  );
 
-    const deletedListingTitle = intl.formatMessage({
-      id: 'TransactionPanel.deletedListingTitle',
-    });
+  const deletedListingTitle = intl.formatMessage({
+    id: 'TransactionPanel.deletedListingTitle',
+  });
 
-    const listingTitle = listingDeleted ? deletedListingTitle : listing?.attributes?.title;
-    const firstImage = listing?.images?.length > 0 ? listing?.images[0] : null;
+  const listingTitle = listingDeleted ? deletedListingTitle : listing?.attributes?.title;
+  const firstImage = listing?.images?.length > 0 ? listing?.images[0] : null;
 
-    const actionButtons = (
-      <ActionButtonsMaybe
-        showButtons={stateData.showActionButtons}
-        primaryButtonProps={stateData?.primaryButtonProps}
-        secondaryButtonProps={stateData?.secondaryButtonProps}
-        isListingDeleted={listingDeleted}
-        isProvider={isProvider}
-      />
-    );
+  const actionButtons = (
+    <ActionButtonsMaybe
+      showButtons={stateData.showActionButtons}
+      primaryButtonProps={stateData?.primaryButtonProps}
+      secondaryButtonProps={stateData?.secondaryButtonProps}
+      isListingDeleted={listingDeleted}
+      isProvider={isProvider}
+    />
+  );
 
-    const listingType = listing?.attributes?.publicData?.listingType;
-    const listingTypeConfigs = config.listing.listingTypes;
-    const listingTypeConfig = listingTypeConfigs.find(conf => conf.listingType === listingType);
-    const showPrice = isInquiryProcess && displayPrice(listingTypeConfig);
+  const listingType = listing?.attributes?.publicData?.listingType;
+  const listingTypeConfigs = config.listing.listingTypes;
+  const listingTypeConfig = listingTypeConfigs.find(conf => conf.listingType === listingType);
+  const showPrice = isInquiryProcess && displayPrice(listingTypeConfig);
 
-    const showSendMessageForm =
-      !isCustomerBanned && !isCustomerDeleted && !isProviderBanned && !isProviderDeleted;
+  const showSendMessageForm =
+    !isCustomerBanned && !isCustomerDeleted && !isProviderBanned && !isProviderDeleted;
 
-    const deliveryMethod = protectedData?.deliveryMethod || 'none';
+  const deliveryMethod = protectedData?.deliveryMethod || 'none';
 
-    const classes = classNames(rootClassName || css.root, className);
+  const classes = classNames(rootClassName || css.root, className);
 
-    const { qrCode } = useWeb3();
-    console.log({qrCode})
+  const { qrCode } = useWeb3();
+  console.log({ qrCode });
 
-    return (
-      <div className={classes}>
-        <div className={css.container}>
-          <div className={css.txInfo}>
-            <DetailCardImage
-              rootClassName={css.imageWrapperMobile}
-              avatarWrapperClassName={css.avatarWrapperMobile}
-              listingTitle={listingTitle}
-              image={firstImage}
-              provider={provider}
-              isCustomer={isCustomer}
-              listingImageConfig={config.layout.listingImage}
-            />
-            {isProvider ? (
-              <div className={css.avatarWrapperProviderDesktop}>
-                <AvatarLarge user={customer} className={css.avatarDesktop} />
-              </div>
-            ) : null}
-            
+  return (
+    <div className={classes}>
+      <div className={css.container}>
+        <div className={css.txInfo}>
+          <DetailCardImage
+            rootClassName={css.imageWrapperMobile}
+            avatarWrapperClassName={css.avatarWrapperMobile}
+            listingTitle={listingTitle}
+            image={firstImage}
+            provider={provider}
+            isCustomer={isCustomer}
+            listingImageConfig={config.layout.listingImage}
+          />
+          {isProvider ? (
+            <div className={css.avatarWrapperProviderDesktop}>
+              <AvatarLarge user={customer} className={css.avatarDesktop} />
+            </div>
+          ) : null}
 
-            <PanelHeading
-              processName={stateData.processName}
-              processState={stateData.processState}
-              showExtraInfo={stateData.showExtraInfo}
-              showPriceOnMobile={showPrice}
-              price={listing?.attributes?.price}
-              intl={intl}
-              deliveryMethod={deliveryMethod}
-              isPendingPayment={!!stateData.isPendingPayment}
-              transactionRole={transactionRole}
-              providerName={authorDisplayName}
-              customerName={customerDisplayName}
-              isCustomerBanned={isCustomerBanned}
-              listingId={listing?.id?.uuid}
-              listingTitle={listingTitle}
-              listingDeleted={listingDeleted}
-            />
+          <PanelHeading
+            processName={stateData.processName}
+            processState={stateData.processState}
+            showExtraInfo={stateData.showExtraInfo}
+            showPriceOnMobile={showPrice}
+            price={listing?.attributes?.price}
+            intl={intl}
+            deliveryMethod={deliveryMethod}
+            isPendingPayment={!!stateData.isPendingPayment}
+            transactionRole={transactionRole}
+            providerName={authorDisplayName}
+            customerName={customerDisplayName}
+            isCustomerBanned={isCustomerBanned}
+            listingId={listing?.id?.uuid}
+            listingTitle={listingTitle}
+            listingDeleted={listingDeleted}
+          />
 
-             {/* Adição do QR Code para check-in/check-out */}
-             <div className={css.qrCodeSection}>
-              <h4 className={css.qrCodeTitle}>
+          <div className={css.qrCodeSection}>
+            <h4 className={css.qrCodeTitle}>
               <FormattedMessage id="TransactionPanel.qrCodeTitle" />
-              </h4>
-              <img
-                src={qrCode}
-                alt="QR Code for Check-In/Check-Out"
-                className={css.qrCodeImage}
-              />
-             </div>
-
-            <InquiryMessageMaybe
-              protectedData={protectedData}
-              showInquiryMessage={isInquiryProcess}
-              isCustomer={isCustomer}
+            </h4>
+            <img
+              src={qrCode} // Adjust the src according to your requirement
+              alt="QR Code for Check-In/Check-Out"
+              className={css.qrCodeImage}
             />
-
-            {!isInquiryProcess ? (
-              <div className={css.orderDetails}>
-                <div className={css.orderDetailsMobileSection}>
-                  <BreakdownMaybe
-                    orderBreakdown={orderBreakdown}
-                    processName={stateData.processName}
-                  />
-                  <DiminishedActionButtonMaybe
-                    showDispute={stateData.showDispute}
-                    onOpenDisputeModal={onOpenDisputeModal}
-                  />
-                </div>
-
-                {savePaymentMethodFailed ? (
-                  <p className={css.genericError}>
-                    <FormattedMessage
-                      id="TransactionPanel.savePaymentMethodFailed"
-                      values={{
-                        paymentMethodsPageLink: (
-                          <NamedLink name="PaymentMethodsPage">
-                            <FormattedMessage id="TransactionPanel.paymentMethodsPageLink" />
-                          </NamedLink>
-                        ),
-                      }}
-                    />
-                  </p>
-                ) : null}
-                <DeliveryInfoMaybe
-                  className={css.deliveryInfoSection}
-                  protectedData={protectedData}
-                  listing={listing}
-                  locale={config.localization.locale}
-                />
-                <BookingLocationMaybe
-                  className={css.deliveryInfoSection}
-                  listing={listing}
-                  showBookingLocation={showBookingLocation}
-                />
-              </div>
-            ) : null}
-            
-            <FeedSection
-              rootClassName={css.feedContainer}
-              hasMessages={messages.length > 0}
-              hasTransitions={hasTransitions}
-              fetchMessagesError={fetchMessagesError}
-              initialMessageFailed={initialMessageFailed}
-              activityFeed={activityFeed}
-              isConversation={isInquiryProcess}
-            />
-            {showSendMessageForm ? (
-              <SendMessageForm
-                formId={this.sendMessageFormName}
-                rootClassName={css.sendMessageForm}
-                messagePlaceholder={intl.formatMessage(
-                  { id: 'TransactionPanel.sendMessagePlaceholder' },
-                  { name: otherUserDisplayNameString }
-                )}
-                inProgress={sendMessageInProgress}
-                sendMessageError={sendMessageError}
-                onFocus={this.onSendMessageFormFocus}
-                onBlur={this.onSendMessageFormBlur}
-                onSubmit={this.onMessageSubmit}
-              />
-            ) : (
-              <div className={css.sendingMessageNotAllowed}>
-                <FormattedMessage id="TransactionPanel.sendingMessageNotAllowed" />
-              </div>
-            )}
-
-            
-            {stateData.showActionButtons ? (
-              <>
-                <div className={css.mobileActionButtonSpacer}></div>
-                <div className={css.mobileActionButtons}>{actionButtons}</div>
-              </>
-            ) : null}
           </div>
 
-          <div className={css.asideDesktop}>
-            <div className={css.stickySection}>
-              <div className={css.detailCard}>
-                <DetailCardImage
-                  avatarWrapperClassName={css.avatarWrapperDesktop}
-                  listingTitle={listingTitle}
-                  image={firstImage}
-                  provider={provider}
-                  isCustomer={isCustomer}
-                  listingImageConfig={config.layout.listingImage}
-                />
+          <InquiryMessageMaybe
+            protectedData={protectedData}
+            showInquiryMessage={isInquiryProcess}
+            isCustomer={isCustomer}
+          />
 
-                <DetailCardHeadingsMaybe
-                  showDetailCardHeadings={stateData.showDetailCardHeadings}
-                  listingTitle={
-                    listingDeleted ? (
-                      listingTitle
-                    ) : (
-                      <NamedLink
-                        name="ListingPage"
-                        params={{ id: listing.id?.uuid, slug: createSlug(listingTitle) }}
-                      >
-                        {listingTitle}
-                      </NamedLink>
-                    )
-                  }
-                  showPrice={showPrice}
-                  price={listing?.attributes?.price}
-                  intl={intl}
-                />
-                
-                {stateData.showOrderPanel ? orderPanel : null}
+          {!isInquiryProcess ? (
+            <div className={css.orderDetails}>
+              <div className={css.orderDetailsMobileSection}>
                 <BreakdownMaybe
-                  className={css.breakdownContainer}
                   orderBreakdown={orderBreakdown}
                   processName={stateData.processName}
                 />
-
-                {stateData.showActionButtons ? (
-                  <div className={css.desktopActionButtons}>{actionButtons}</div>
-                ) : null}
+                <DiminishedActionButtonMaybe
+                  showDispute={stateData.showDispute}
+                  onOpenDisputeModal={onOpenDisputeModal}
+                />
               </div>
-              <DiminishedActionButtonMaybe
-                showDispute={stateData.showDispute}
-                onOpenDisputeModal={onOpenDisputeModal}
+
+              {savePaymentMethodFailed ? (
+                <p className={css.genericError}>
+                  <FormattedMessage
+                    id="TransactionPanel.savePaymentMethodFailed"
+                    values={{
+                      paymentMethodsPageLink: (
+                        <NamedLink name="PaymentMethodsPage">
+                          <FormattedMessage id="TransactionPanel.paymentMethodsPageLink" />
+                        </NamedLink>
+                      ),
+                    }}
+                  />
+                </p>
+              ) : null}
+              <DeliveryInfoMaybe
+                className={css.deliveryInfoSection}
+                protectedData={protectedData}
+                listing={listing}
+                locale={config.localization.locale}
+              />
+              <BookingLocationMaybe
+                className={css.deliveryInfoSection}
+                listing={listing}
+                showBookingLocation={showBookingLocation}
               />
             </div>
+          ) : null}
+
+          <FeedSection
+            rootClassName={css.feedContainer}
+            hasMessages={messages.length > 0}
+            hasTransitions={hasTransitions}
+            fetchMessagesError={fetchMessagesError}
+            initialMessageFailed={initialMessageFailed}
+            activityFeed={activityFeed}
+            isConversation={isInquiryProcess}
+          />
+          {showSendMessageForm ? (
+            <SendMessageForm
+              formId="TransactionPanel.SendMessageForm"
+              rootClassName={css.sendMessageForm}
+              messagePlaceholder={intl.formatMessage(
+                { id: 'TransactionPanel.sendMessagePlaceholder' },
+                { name: otherUserDisplayNameString }
+              )}
+              inProgress={sendMessageInProgress}
+              sendMessageError={sendMessageError}
+              onFocus={onSendMessageFormFocus}
+              onBlur={onSendMessageFormBlur}
+              onSubmit={onMessageSubmit}
+            />
+          ) : (
+            <div className={css.sendingMessageNotAllowed}>
+              <FormattedMessage id="TransactionPanel.sendingMessageNotAllowed" />
+            </div>
+          )}
+
+          {stateData.showActionButtons ? (
+            <>
+              <div className={css.mobileActionButtonSpacer}></div>
+              <div className={css.mobileActionButtons}>{actionButtons}</div>
+            </>
+          ) : null}
+        </div>
+
+        <div className={css.asideDesktop}>
+          <div className={css.stickySection}>
+            <div className={css.detailCard}>
+              <DetailCardImage
+                avatarWrapperClassName={css.avatarWrapperDesktop}
+                listingTitle={listingTitle}
+                image={firstImage}
+                provider={provider}
+                isCustomer={isCustomer}
+                listingImageConfig={config.layout.listingImage}
+              />
+
+              <DetailCardHeadingsMaybe
+                showDetailCardHeadings={stateData.showDetailCardHeadings}
+                listingTitle={
+                  listingDeleted ? (
+                    listingTitle
+                  ) : (
+                    <NamedLink
+                      name="ListingPage"
+                      params={{ id: listing.id?.uuid, slug: createSlug(listingTitle) }}
+                    >
+                      {listingTitle}
+                    </NamedLink>
+                  )
+                }
+                showPrice={showPrice}
+                price={listing?.attributes?.price}
+                intl={intl}
+              />
+
+              {stateData.showOrderPanel ? orderPanel : null}
+              <BreakdownMaybe
+                className={css.breakdownContainer}
+                orderBreakdown={orderBreakdown}
+                processName={stateData.processName}
+              />
+
+              {stateData.showActionButtons ? (
+                <div className={css.desktopActionButtons}>{actionButtons}</div>
+              ) : null}
+            </div>
+            <DiminishedActionButtonMaybe
+              showDispute={stateData.showDispute}
+              onOpenDisputeModal={onOpenDisputeModal}
+            />
           </div>
         </div>
       </div>
-    );
-  }
-}
+    </div>
+  );
+};
 
 TransactionPanelComponent.defaultProps = {
   rootClassName: null,
