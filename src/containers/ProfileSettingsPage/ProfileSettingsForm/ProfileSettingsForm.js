@@ -4,7 +4,7 @@ import { compose } from 'redux';
 import { Field, Form as FinalForm } from 'react-final-form';
 import isEqual from 'lodash/isEqual';
 import classNames from 'classnames';
-import { ethers } from "ethers"
+
 import { FormattedMessage, injectIntl, intlShape } from '../../../util/reactIntl';
 import { ensureCurrentUser } from '../../../util/data';
 import { propTypes } from '../../../util/types';
@@ -22,11 +22,6 @@ import {
 } from '../../../components';
 
 import css from './ProfileSettingsForm.module.css';
-
-//contract imports 
-import AhoyAddress from '../../../contractsData/Ahoy-address.json'
-import AhoyAbi from '../../../contractsData/Ahoy.json'
-import { useWeb3 } from '../../../context/Web3';
 
 const ACCEPT_IMAGES = 'image/*';
 const UPLOAD_CHANGE_DELAY = 2000; // Show spinner so that browser has time to load img srcset
@@ -191,9 +186,6 @@ class ProfileSettingsFormComponent extends Component {
           const pristineSinceLastSubmit = submittedOnce && isEqual(values, this.submittedValues);
           const submitDisabled =
             invalid || pristine || pristineSinceLastSubmit || uploadInProgress || submitInProgress;
-          const { client, hasWeb3, web3Handler } = useWeb3();
-          console.log({client})
-
 
           return (
             <Form
@@ -273,21 +265,6 @@ class ProfileSettingsFormComponent extends Component {
                 </div>
               </div>
               <div className={css.sectionContainer}>
-              {!hasWeb3 ? (
-                <Button href="https://metamask.io/" target="_blank" rel="noopener noreferrer">
-                  Download MetaMask
-                </Button>
-              ) : client ? (
-                <div>
-                  <Button disabled style={{ backgroundColor: 'green' }}>
-                    {client.account.slice(0, 6) + '...' + client.account.slice(-4)}
-                  </Button>
-                </div>
-              ) : (
-                <Button onClick={web3Handler}>
-                  Connect Wallet
-                </Button>
-              )}
                 <H4 as="h2" className={css.sectionTitle}>
                   <FormattedMessage id="ProfileSettingsForm.yourName" />
                 </H4>
