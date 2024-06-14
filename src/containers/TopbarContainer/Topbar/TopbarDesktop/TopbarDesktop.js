@@ -69,7 +69,7 @@ const InboxLink = ({ notificationCount, currentUserHasListings }) => {
 const ProfileMenu = ({ currentPage, currentUser, onLogout, onUpdateProfile }) => {
   const { hasWeb3, client, web3Handler } = useWeb3();
   const [showQrReader, setShowQrReader] = useState(false);
-  console.log({client})
+
   const currentPageClass = page => {
     const isAccountSettingsPage =
       page === 'AccountSettingsPage' && ACCOUNT_SETTINGS_PAGES.includes(currentPage);
