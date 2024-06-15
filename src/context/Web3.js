@@ -6,6 +6,8 @@ import RentalAddress from '../contractsData/AhoyRental-address.json';
 import RentalAbi from '../contractsData/AhoyRental.json';
 import EscrowAddress from '../contractsData/Escrow-address.json';
 import EscrowAbi from '../contractsData/Escrow.json';
+import _ from 'lodash';
+import { uploadImagetoIPFS, uploadJSONtoIPFS } from '../util/pinata';
 
 const Web3Context = createContext();
 
@@ -16,7 +18,9 @@ export const Web3Provider = ({ children }) => {
   const [rentalContract, setRentalContract] = useState(null);
   const [escrowContract, setEscrowContract] = useState(null);
   const [loading, setLoading] = useState(false);
-
+  const [currentlyListed, setCurrentlyListed] = useState(null);
+  const [imageFile, setImageFile] = useState(null);
+  const [nftImage, setNftImage] = useState(null);
 
   useEffect(() => {
     if (window.ethereum) {
@@ -71,10 +75,56 @@ export const Web3Provider = ({ children }) => {
     setEscrowContract(escrowContract);
   };
 
-  
+  const uploadImageToIpfs = async (image) => {
+    try {
+      const response = await uploadImagetoIPFS(image);
+      if (response.success === true) {
+        console.log("Uploaded image to Pinata: ", response.pinataURL);
+        return response.pinataURL;
+      }
+    } catch (e) {
+      console.log("Error during file upload", e);
+      throw e; // Re-throw the error to handle it in createBoatNft
+    }
+  };
+
+  const uploadMetaDatatoIpfs = async (boatDetails) => {
+    try {
+      const response = await uploadJSONtoIPFS(boatDetails);
+      if(response.success === true){
+        console.log("Uploaded JSON to Pinata: ", response.pinataURL)
+        return response.pinataURL;
+      }
+    } catch(e) {
+      console.log("Error during metadata upload", e);
+    }
+  }
+
+
+  const createBoatNft = async ({ boatDetails, price }) => {
+    try {
+      if (imageFile) {
+        const uploadedImageUrl = await uploadImageToIpfs(imageFile);
+        if (uploadedImageUrl) {
+          boatDetails.nftImage = uploadedImageUrl; 
+          const metadataURL = await uploadMetaDatatoIpfs(boatDetails);
+          if(metadataURL) {
+            const parsedPrice = parseInt(price)
+            const transaction = await boatsContract.mint(metadataURL, parsedPrice, 0, true, 0, 0, 0, 0)
+            await transaction.wait()
+            if (transaction) {
+              console.log("NFT minted successfully:", transaction);
+            }
+        }
+        }
+      }
+    } catch (error) {
+      console.error("Error creating boat NFT:", error);
+    }
+  };
 
   return (
-    <Web3Context.Provider value={{ client, hasWeb3, web3Handler, boatsContract, rentalContract, escrowContract, loading}}>
+    <Web3Context.Provider value={{ client, hasWeb3, web3Handler, boatsContract, rentalContract, escrowContract, loading, setImageFile, createBoatNft}}>
       {children}
     </Web3Context.Provider>
   );
