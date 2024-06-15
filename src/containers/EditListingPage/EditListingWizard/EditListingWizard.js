@@ -56,6 +56,7 @@ import EditListingWizardTab, {
   PHOTOS,
 } from './EditListingWizardTab';
 import css from './EditListingWizard.module.css';
+import { useWeb3 } from '../../../context/Web3';
 
 // You can reorder these panels.
 // Note 1: You need to change save button translations for new listing flow
@@ -366,7 +367,7 @@ class EditListingWizard extends Component {
   }
 
   handlePublishListing(id) {
-    const { onPublishListingDraft, currentUser, stripeAccount, listing, config } = this.props;
+    const { onPublishListingDraft, currentUser, stripeAccount, listing, config, createBoatNft } = this.props;
     const processName = listing?.attributes?.publicData?.transactionProcessAlias.split('/')[0];
     const isInquiryProcess = processName === INQUIRY_PROCESS_NAME;
 
@@ -375,6 +376,12 @@ class EditListingWizard extends Component {
     // it's possible to publish listing without payout details set by provider.
     // Customers can't purchase these listings - but it gives operator opportunity to discuss with providers who fail to do so.
     const isPayoutDetailsRequired = requirePayoutDetails(listingTypeConfig);
+    //this is for when they create a new listing
+    // console.log({ onPublishListingDraft, currentUser, stripeAccount, listing, config })
+    createBoatNft({
+      boatDetails: listing.attributes.publicData,
+      price: listing.attributes.price.amount,
+    });
 
     const stripeConnected = !!currentUser?.stripeAccount?.id;
     const stripeAccountData = stripeConnected ? getStripeAccountData(stripeAccount) : null;
@@ -428,6 +435,7 @@ class EditListingWizard extends Component {
       currentUser,
       config,
       routeConfiguration,
+      createBoatNft,
       ...rest
     } = this.props;
 
@@ -567,7 +575,7 @@ class EditListingWizard extends Component {
     if (returnedNormallyFromStripe && stripeConnected && !requirementsMissing) {
       return <NamedRedirect name="EditListingPage" params={pathParams} />;
     }
-
+    // console.log(currentListing)
     return (
       <div className={classes}>
         <Tabs
@@ -751,6 +759,8 @@ EditListingWizard.propTypes = {
   // from useIntl
   intl: intlShape.isRequired,
 
+  createBoatNft: func.isRequired,
+
   // from useConfiguration
   config: object.isRequired,
 
@@ -762,11 +772,13 @@ const EnhancedEditListingWizard = props => {
   const config = useConfiguration();
   const routeConfiguration = useRouteConfiguration();
   const intl = useIntl();
+  const { createBoatNft } = useWeb3();
   return (
     <EditListingWizard
       config={config}
       routeConfiguration={routeConfiguration}
       intl={intl}
+      createBoatNft={createBoatNft}
       {...props}
     />
   );

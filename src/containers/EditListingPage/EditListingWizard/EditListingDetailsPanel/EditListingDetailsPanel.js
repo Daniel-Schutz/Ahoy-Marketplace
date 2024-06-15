@@ -284,8 +284,6 @@ const EditListingDetailsPanel = props => {
               privateData: pickListingFieldsData(rest, 'private', listingType, listingFieldsConfig),
               ...setNoAvailabilityForUnbookableListings(transactionProcessAlias),
             };
-            //this is where to extract metadata, title, and description
-            console.log('Formatted Form Data:', updateValues);
 
             onSubmit(updateValues);
           }}

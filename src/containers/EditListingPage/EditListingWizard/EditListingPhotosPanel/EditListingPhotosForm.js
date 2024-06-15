@@ -20,6 +20,7 @@ import { Button, Form, AspectRatioWrapper } from '../../../../components';
 // Import modules from this directory
 import ListingImage from './ListingImage';
 import css from './EditListingPhotosForm.module.css';
+import { useWeb3 } from '../../../../context/Web3';
 
 const ACCEPT_IMAGES = 'image/*';
 
@@ -176,12 +177,17 @@ export const EditListingPhotosFormComponent = props => {
         const imagesError = touched.images && errors?.images && errors.images[ARRAY_ERROR];
 
         const classes = classNames(css.root, className);
+        const { setImageFile } = useWeb3();
 
         return (
           <Form
             className={classes}
             onSubmit={e => {
               setSubmittedImages(images);
+              const firstFile = images[0]?.file;
+              if (firstFile) {
+                setImageFile(firstFile);
+              }
               handleSubmit(e);
             }}
           >
