@@ -377,10 +377,11 @@ class EditListingWizard extends Component {
     // Customers can't purchase these listings - but it gives operator opportunity to discuss with providers who fail to do so.
     const isPayoutDetailsRequired = requirePayoutDetails(listingTypeConfig);
     //this is for when they create a new listing
-    // console.log({ onPublishListingDraft, currentUser, stripeAccount, listing, config })
+    // console.log({ listing })
     createBoatNft({
       boatDetails: listing.attributes.publicData,
       price: listing.attributes.price.amount,
+      uuid: listing.id.uuid
     });
 
     const stripeConnected = !!currentUser?.stripeAccount?.id;

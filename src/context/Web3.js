@@ -101,16 +101,46 @@ export const Web3Provider = ({ children }) => {
   }
 
 
-  const createBoatNft = async ({ boatDetails, price }) => {
+  const createBoatNft = async ({ boatDetails, price, uuid }) => {
+    if (!client) {
+      console.error("Client is not initialized.");
+      return;
+    }
+    const listingType = boatDetails.listingType
+    let hourlyPrice;
+    let dailyPrice;
+    let sellPrice;
+    const refundabilityPeriod= 0;
+    const deposit = 0;
+    const closedPeriod = 0;
+
+    //listing type options are 
+    //"sale"
+    //"hourly-rental"
+    //"daily-rental"
+
+
     try {
       if (imageFile) {
         const uploadedImageUrl = await uploadImageToIpfs(imageFile);
         if (uploadedImageUrl) {
           boatDetails.nftImage = uploadedImageUrl; 
           const metadataURL = await uploadMetaDatatoIpfs(boatDetails);
-          if(metadataURL) {
-            const parsedPrice = parseInt(price)
-            const transaction = await boatsContract.mint(metadataURL, parsedPrice, 0, true, 0, 0, 0, 0)
+          if(metadataURL) { 
+            if (listingType === "sale") {
+              sellPrice = parseInt(price);
+              dailyPrice = 0;
+              hourlyPrice = 0;
+            } else if (listingType === "hourly-rental") {
+              sellPrice = 0;
+              dailyPrice = 0;
+              hourlyPrice = parseInt(price);
+            } else {
+              sellPrice = 0;
+              dailyPrice = parseInt(price);
+              hourlyPrice = 0;
+            }
+            const transaction = await boatsContract.mint(metadataURL, hourlyPrice, dailyPrice, true, refundabilityPeriod, deposit, closedPeriod, sellPrice)
             await transaction.wait()
             if (transaction) {
               console.log("NFT minted successfully:", transaction);

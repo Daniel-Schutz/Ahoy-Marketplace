@@ -2,7 +2,7 @@ import axios from 'axios';
 const FormData = require('form-data');
 
 const pinataConfig = {
-    root: 'https://api.pinata.cloud/',
+    root: 'https://api.pinata.cloud',
     headers: {
         'pinata_api_key': process.env.REACT_APP_PINATA_API_KEY,
         'pinata_secret_api_key': process.env.REACT_APP_PINATA_SECRE_API_KEY
