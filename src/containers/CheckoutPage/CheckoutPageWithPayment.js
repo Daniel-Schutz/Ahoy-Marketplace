@@ -46,6 +46,7 @@ const ONETIME_PAYMENT = 'ONETIME_PAYMENT';
 const PAY_AND_SAVE_FOR_LATER_USE = 'PAY_AND_SAVE_FOR_LATER_USE';
 const USE_SAVED_CARD = 'USE_SAVED_CARD';
 
+
 const paymentFlow = (selectedPaymentMethod, saveAfterOnetimePayment) => {
   // Payment mode could be 'replaceCard', but without explicit saveAfterOnetimePayment flag,
   // we'll handle it as one-time payment
@@ -171,54 +172,21 @@ export const loadInitialDataForStripePayments = ({
 
   fetchSpeculatedTransactionIfNeeded(orderParams, pageData, fetchSpeculatedTransaction);
 };
-const handleGenerateQRCode = async (pageData,currentUser) => {
-  try {
-    const { listing, transaction, orderData } = pageData;
-    console.log(pageData);
-    const qrData = { boat_name: listing.attributes.title, author_id: listing.author.id.uuid, author_name: listing.author.attributes.profile.displayName, start_date: orderData.bookingDates.bookingStart, end_date: orderData.bookingDates.bookingEnd, renter_name:currentUser.attributes.profile.displayName, renter_id: currentUser.id.uuid};
-    const qrDataJson = JSON.stringify(qrData);
+const handleGenerateQRCodeUrl = (pageData,currentUser) => {
+    const { listing, orderData } = pageData;
+    const fileName = `${uuidv4()}.png`;  
+    const storageZoneName = 'ahoy-qr-code';
+    const qrData = {boat_name: listing.attributes.title, author_id: listing.author.id.uuid, author_name: listing.author.attributes.profile.displayName, start_date: orderData.bookingDates.bookingStart, end_date: orderData.bookingDates.bookingEnd, renter_name:currentUser.attributes.profile.displayName, renter_id: currentUser.id.uuid};
+    const qrCodeUrl =`https://${storageZoneName}.b-cdn.net/${fileName}`;
 
+    return [fileName, qrData,qrCodeUrl];
 
-    const quickchartUrl = "https://quickchart.io/qr";
-    const response = await axios.get(quickchartUrl, {
-      params: { text: qrDataJson, size: "300" },
-      responseType: 'arraybuffer' 
-    });
-
-    if (response.status === 200) {
-      const imgData = response.data;
-      const fileName = `${uuidv4()}.png`;  
-      const storageZoneName = 'ahoy-qr-code';
-      const accessKey = '5d1b0c5d-fe35-41e6-8318d24247da-d5a9-40f3';  
-      const baseUrl = "storage.bunnycdn.com";
-      const url = `https://${baseUrl}/${storageZoneName}/${fileName}`;
-
-      // Faz upload da imagem para o BunnyCDN
-      const uploadResponse = await axios.put(url, imgData, {
-        headers: {
-          "AccessKey": accessKey,
-          "Content-Type": "application/octet-stream",
-        },
-      });
-
-      if (uploadResponse.status === 200 || uploadResponse.status === 201) {
-        const qrCodeUrl = `https://${storageZoneName}.b-cdn.net/${fileName}`;
-        console.log("QR code URL:", qrCodeUrl);
-        return qrCodeUrl;
-      
-      } else {
-        console.error(`Failed to upload image. Status code: ${uploadResponse.status}, Response: ${uploadResponse.data}`);
-      }
-    } else {
-      console.error(`Failed to generate QR code. Status code: ${response.status}`);
-    }
-  } catch (error) {
-    console.error("Error generating or uploading QR code:", error);
-  }
-  return null;
+    
+    
 };
 
 const handleSubmit = async (values, process, props, stripe, submitting, setSubmitting) => {
+
   if (submitting) {
     return;
   }
@@ -244,8 +212,8 @@ const handleSubmit = async (values, process, props, stripe, submitting, setSubmi
     sessionStorageKey,
   } = props;
 
-  const qrCodeUrl = await handleGenerateQRCode(pageData,currentUser); // Gera o QR code e obtém a URL
-  if (!qrCodeUrl) {
+  const [fileName, qrData,qrCodeUrl] = handleGenerateQRCodeUrl(pageData,currentUser); // Gera o QR code e obtém a URL
+  if (qrCodeUrl === null) {
     setSubmitting(false);
     return;
   }
@@ -304,13 +272,49 @@ const handleSubmit = async (values, process, props, stripe, submitting, setSubmi
   // These are the order parameters for the first payment-related transition
   // which is either initiate-transition or initiate-transition-after-enquiry
   const orderParams = getOrderParams(pageData, shippingDetails, optionalPaymentParams, config, qrCodeUrl);
-
+ 
   // There are multiple XHR calls that needs to be made against Stripe API and Sharetribe Marketplace API on checkout with payments
   processCheckoutWithPayment(orderParams, requestPaymentParams)
-    .then(response => {
+    .then(async response => {
       const { orderId, messageSuccess, paymentMethodSaved } = response;
-      setSubmitting(false);
+      
+      qrData.transaction_id = orderId.uuid;
+   
+      const qrDataJson = JSON.stringify(qrData);
+      const quickchartUrl = "https://quickchart.io/qr";
+      const quickchartResponse = await axios.get(quickchartUrl, {
+        params: { text: qrDataJson, size: "300" },
+        responseType: 'arraybuffer' 
+      });
+  
+      if (quickchartResponse.status === 200) {
+        const imgData = quickchartResponse.data;
+        const storageZoneName = 'ahoy-qr-code';
+        const accessKey = '5d1b0c5d-fe35-41e6-8318d24247da-d5a9-40f3';  
+        const baseUrl = "storage.bunnycdn.com";
+        const url = `https://${baseUrl}/${storageZoneName}/${fileName}`;
+  
+        // Faz upload da imagem para o BunnyCDN
+        const uploadResponse = await axios.put(url, imgData, {
+          headers: {
+            "AccessKey": accessKey,
+            "Content-Type": "application/octet-stream",
+          },
+        });
+  
+        if (uploadResponse.status === 200 || uploadResponse.status === 201) {
+          console.log("QR code URL:", qrCodeUrl);
+        
+        } else {
+          console.error(`Failed to upload image. Status code: ${uploadResponse.status}, Response: ${uploadResponse.data}`);
+        }
+      } else {
+        console.error(`Failed to generate QR code. Status code: ${quickchartResponse.status}`);
+      }
 
+      setSubmitting(false);
+     
+      
       const initialMessageFailedToTransaction = messageSuccess ? null : orderId;
       const orderDetailsPath = pathByRouteName('OrderDetailsPage', routeConfiguration, {
         id: orderId.uuid,
@@ -323,11 +327,15 @@ const handleSubmit = async (values, process, props, stripe, submitting, setSubmi
       setOrderPageInitialValues(initialValues, routeConfiguration, dispatch);
       onSubmitCallback();
       history.push(orderDetailsPath);
+
     })
     .catch(err => {
       console.error(err);
       setSubmitting(false);
     });
+
+
+   
 };
 
 const onStripeInitialized = (stripe, process, props) => {
