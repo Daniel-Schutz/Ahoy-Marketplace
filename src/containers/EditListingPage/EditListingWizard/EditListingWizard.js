@@ -366,44 +366,49 @@ class EditListingWizard extends Component {
     this.hasScrolledToTab = shouldScroll;
   }
 
-  handlePublishListing(id) {
+  async handlePublishListing(id) {
     const { onPublishListingDraft, currentUser, stripeAccount, listing, config, createBoatNft } = this.props;
     const processName = listing?.attributes?.publicData?.transactionProcessAlias.split('/')[0];
     const isInquiryProcess = processName === INQUIRY_PROCESS_NAME;
-
+  
     const listingTypeConfig = getListingTypeConfig(listing, this.state.selectedListingType, config);
     // Through hosted configs (listingTypeConfig.defaultListingFields?.payoutDetails),
     // it's possible to publish listing without payout details set by provider.
     // Customers can't purchase these listings - but it gives operator opportunity to discuss with providers who fail to do so.
     const isPayoutDetailsRequired = requirePayoutDetails(listingTypeConfig);
-    //this is for when they create a new listing
-    // console.log({ listing })
-    createBoatNft({
-      boatDetails: listing.attributes.publicData,
-      price: listing.attributes.price.amount,
-      uuid: listing.id.uuid
-    });
-
-    const stripeConnected = !!currentUser?.stripeAccount?.id;
-    const stripeAccountData = stripeConnected ? getStripeAccountData(stripeAccount) : null;
-    const stripeRequirementsMissing =
-      stripeAccount &&
-      (hasRequirements(stripeAccountData, 'past_due') ||
-        hasRequirements(stripeAccountData, 'currently_due'));
-
-    if (
-      isInquiryProcess ||
-      !isPayoutDetailsRequired ||
-      (stripeConnected && !stripeRequirementsMissing)
-    ) {
-      onPublishListingDraft(id);
-    } else {
-      this.setState({
-        draftId: id,
-        showPayoutDetails: true,
+  
+    try {
+      // Run the createBoatNft function and wait for it to complete
+      await createBoatNft({
+        boatDetails: listing.attributes.publicData,
+        price: listing.attributes.price.amount,
+        uuid: listing.id.uuid
       });
+  
+      const stripeConnected = !!currentUser?.stripeAccount?.id;
+      const stripeAccountData = stripeConnected ? getStripeAccountData(stripeAccount) : null;
+      const stripeRequirementsMissing =
+        stripeAccount &&
+        (hasRequirements(stripeAccountData, 'past_due') ||
+          hasRequirements(stripeAccountData, 'currently_due'));
+  
+      if (
+        isInquiryProcess ||
+        !isPayoutDetailsRequired ||
+        (stripeConnected && !stripeRequirementsMissing)
+      ) {
+        onPublishListingDraft(id);
+      } else {
+        this.setState({
+          draftId: id,
+          showPayoutDetails: true,
+        });
+      }
+    } catch (error) {
+      console.error("Error creating boat NFT or publishing listing:", error);
     }
   }
+  
 
   handlePayoutModalClose() {
     this.setState({ showPayoutDetails: false });
