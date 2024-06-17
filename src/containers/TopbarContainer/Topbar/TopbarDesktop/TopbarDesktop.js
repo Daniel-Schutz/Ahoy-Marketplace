@@ -69,7 +69,7 @@ const InboxLink = ({ notificationCount, currentUserHasListings }) => {
 const ProfileMenu = ({ currentPage, currentUser, onLogout, onUpdateProfile }) => {
   const { hasWeb3, client, web3Handler } = useWeb3();
   const [showQrReader, setShowQrReader] = useState(false);
-
+  console.log({client})
   const currentPageClass = page => {
     const isAccountSettingsPage =
       page === 'AccountSettingsPage' && ACCOUNT_SETTINGS_PAGES.includes(currentPage);
@@ -78,8 +78,15 @@ const ProfileMenu = ({ currentPage, currentUser, onLogout, onUpdateProfile }) =>
 
   const handleQrScan = (result) => {
     if (result) {
-      console.log("QR Code Result:", result?.text);
-      console.log(currentUser)
+// String JSON
+      const jsonString = result?.text
+      const qrCodeDict = JSON.parse(jsonString);
+      if (qrCodeDict.author_id === currentUser.id.uuid) {
+        console.log("This user can verify the qrCode")
+        //change the status
+      } else{
+        console.log("This user can't verify the qrCode")
+      }
       setShowQrReader(false);
     }
   };
