@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { bool, func, object, number, string } from 'prop-types';
 import classNames from 'classnames';
 import { QrReader } from 'react-qr-reader';
-
+import axios from 'axios';
+import { updateTransactionMetadata } from '../../../../util/api';
 import { FormattedMessage, intlShape } from '../../../../util/reactIntl';
 import { ACCOUNT_SETTINGS_PAGES } from '../../../../routing/routeConfiguration';
 import { propTypes } from '../../../../util/types';
@@ -29,6 +30,17 @@ import CustomLinksMenu from './CustomLinksMenu/CustomLinksMenu';
 
 import css from './TopbarDesktop.module.css';
 import { useWeb3 } from '../../../../context/Web3';
+
+const fetchUpdateTransactionMetadata = ({ transactionId, bookingStatus }) => {
+  console.log(transactionId)
+  updateTransactionMetadata({transactionId, bookingStatus})
+    .then(response => {
+      console.log(response.data)
+    })
+    .catch(e => {
+      console.log(e)
+    });
+};
 
 const SignupLink = () => {
   return (
@@ -76,14 +88,34 @@ const ProfileMenu = ({ currentPage, currentUser, onLogout, onUpdateProfile }) =>
     return currentPage === page || isAccountSettingsPage ? css.currentPage : null;
   };
 
+  const updateTransactionMetadata = async (transactionId, metadata) => {
+    try {
+      const response = await axios.post('/v1/integration_api/transactions/update_metadata', {
+        transactionId: transactionId,
+        metadata: metadata
+      }, {
+        headers: {
+          'Content-Type': 'application/transit+json'
+        }
+      });
+  
+      console.log('Metadata updated successfully:', response.data);
+    } catch (error) {
+      console.error('Error updating metadata:', error.response ? error.response.data : error.message);
+    }
+  };
+
+
   const handleQrScan = (result) => {
     if (result) {
-// String JSON
       const jsonString = result?.text
       const qrCodeDict = JSON.parse(jsonString);
       if (qrCodeDict.author_id === currentUser.id.uuid) {
         console.log("This user can verify the qrCode")
-        //change the status
+          const bookingStatus = {bookingStatus: 'booking status'};
+          const transactionId = {transactionId: qrCodeDict.transaction_id};
+          fetchUpdateTransactionMetadata({ transactionId, bookingStatus });
+
       } else{
         console.log("This user can't verify the qrCode")
       }

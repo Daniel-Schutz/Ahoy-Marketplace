@@ -120,6 +120,8 @@ const EditListingAvailabilityPlanFormComponent = props => {
               })}
             </div>
 
+          
+
             <div className={css.submitButton}>
               {updateListingError ? (
                 <p className={css.error}>

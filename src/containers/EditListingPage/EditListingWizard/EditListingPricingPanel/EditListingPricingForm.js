@@ -99,7 +99,17 @@ export const EditListingPricingFormComponent = props => (
             currencyConfig={appSettings.getCurrencyFormatting(marketplaceCurrency)}
             validate={priceValidators}
           />
-
+      
+          <FieldCurrencyInput
+            id={`${formId}deposit`}
+            name="deposit"
+            className={css.input}
+            autoFocus={autoFocus}
+            label={"Deposit"}
+            placeholder={"Add a deposit value..."}
+            currencyConfig={appSettings.getCurrencyFormatting(marketplaceCurrency)}
+          
+          />
           <Button
             className={css.submitButton}
             type="submit"

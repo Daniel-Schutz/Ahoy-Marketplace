@@ -199,6 +199,9 @@ export const EditListingPricingAndStockFormComponent = props => (
           )}
           {setStockError ? <p className={css.error}>{stockErrorMessage}</p> : null}
 
+          <p>Deposit:</p>
+          <input></input>
+
           <Button
             className={css.submitButton}
             type="submit"

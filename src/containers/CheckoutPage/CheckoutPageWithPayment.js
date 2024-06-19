@@ -211,7 +211,7 @@ const handleSubmit = async (values, process, props, stripe, submitting, setSubmi
     setPageData,
     sessionStorageKey,
   } = props;
-
+  
   const [fileName, qrData,qrCodeUrl] = handleGenerateQRCodeUrl(pageData,currentUser); // Gera o QR code e obtém a URL
   if (qrCodeUrl === null) {
     setSubmitting(false);

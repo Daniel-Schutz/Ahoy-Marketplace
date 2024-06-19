@@ -228,6 +228,16 @@ const EditListingAvailabilityPanel = props => {
           </p>
         ) : null}
 
+      <p>Refund Ability Period (In Hours):</p>
+      <div>
+          <input type="number" min="1" max ="48" step="1" placeholder="Enter a number"/>
+      </div>
+
+      <p>Closed Period (In Hours):</p>
+      <div style={{marginBottom: '30px'}}>
+          <input type="number" min="0" step="1" placeholder="Enter a number"/>
+      </div>
+
         <InlineTextButton
           className={css.editPlanButton}
           onClick={() => setIsEditPlanModalOpen(true)}
