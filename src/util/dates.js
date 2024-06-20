@@ -6,6 +6,20 @@ import moment from 'moment-timezone/builds/moment-timezone-with-data-10-year-ran
 export const START_DATE = 'startDate';
 export const END_DATE = 'endDate';
 
+export const calculateDisplayDates = (params, closedPeriod) => {
+  const { bookingStart, bookingEnd } = params;
+
+  const bookingBufferEnd = new Date(bookingEnd);
+  bookingBufferEnd.setDate(bookingBufferEnd.getDate() + closedPeriod);
+
+  return {
+   bookingStart: bookingStart,
+   bookingEnd: bookingBufferEnd,
+   bookingDisplayStart: bookingStart,
+   bookingDisplayEnd: bookingEnd, 
+  }
+};
+
 /**
  * Check if the browser's DateTimeFormat API supports time zones.
  *

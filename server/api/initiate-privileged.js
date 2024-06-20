@@ -1,3 +1,4 @@
+const { calculateDisplayDates } = require('../api-util/dates');
 const { transactionLineItems } = require('../api-util/lineItems');
 const {
   getSdk,
@@ -12,12 +13,13 @@ module.exports = (req, res) => {
 
   const sdk = getSdk(req, res);
   let lineItems = null;
+  let listing = null;
 
   const listingPromise = () => sdk.listings.show({ id: bodyParams?.params?.listingId });
 
   Promise.all([listingPromise(), fetchCommission(sdk)])
     .then(([showListingResponse, fetchAssetsResponse]) => {
-      const listing = showListingResponse.data.data;
+      listing = showListingResponse.data.data;
       const commissionAsset = fetchAssetsResponse.data.data[0];
 
       const { providerCommission, customerCommission } =
@@ -35,11 +37,16 @@ module.exports = (req, res) => {
     .then(trustedSdk => {
       const { params } = bodyParams;
 
+      const { closedPeriod } = listing.attributes.publicData;
+      // const displayDatesMaybe = closedPeriod ? calculateDisplayDates(params, closedPeriod) : {};
+      const displayDatesMaybe = {};
+
       // Add lineItems to the body params
       const body = {
         ...bodyParams,
         params: {
           ...params,
+          ...displayDatesMaybe,
           lineItems,
         },
       };

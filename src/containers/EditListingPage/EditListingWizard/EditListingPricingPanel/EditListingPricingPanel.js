@@ -16,11 +16,14 @@ import css from './EditListingPricingPanel.module.css';
 
 const { Money } = sdkTypes;
 
+
 const getInitialValues = params => {
   const { listing } = params;
   const { price } = listing?.attributes || {};
+  const { deposit } = listing?.attributes.publicData
 
-  return { price };
+
+  return { price,deposit };
 };
 
 const EditListingPricingPanel = props => {
@@ -68,11 +71,12 @@ const EditListingPricingPanel = props => {
           className={css.form}
           initialValues={initialValues}
           onSubmit={values => {
-            const { price } = values;
+            const { price,deposit } = values;
 
             // New values for listing attributes
             const updateValues = {
-              price,
+              price
+        
             };
             onSubmit(updateValues);
           }}

@@ -42,7 +42,7 @@ const DetailsSideCard = props => {
   const variants = firstImage
     ? Object.keys(firstImage?.attributes?.variants).filter(k => k.startsWith(variantPrefix))
     : [];
-
+  console.log(listing)
   
   return (
     <div className={css.detailsContainerDesktop}>

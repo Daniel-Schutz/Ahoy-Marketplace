@@ -17,10 +17,10 @@ module.exports = (req, res) => {
   integrationSdk.transactions.updateMetadata(
     {
       id: new UUID(transactionId),
-      metadata: metadata // Inclui os metadados na atualização
+      metadata: metadata 
     },
     {
-      expand: true
+      expand: true 
     }
   )
   .then(apiResponse => {
