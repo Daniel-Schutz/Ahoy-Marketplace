@@ -6,7 +6,7 @@ const integrationSdk = sharetribeSdk.createInstance({
 });
 
 module.exports = (req, res) => {
-  const { transactionId, bookingStatus } = req.body;
+  const { transactionId, bookingStatus } = req.b0ody;
 
   // Cria um objeto para os novos metadados
   const metadata = {

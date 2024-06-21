@@ -37,7 +37,7 @@ module.exports = (req, res) => {
     .then(trustedSdk => {
       const { params } = bodyParams;
 
-      const { closedPeriod } = listing.attributes.publicData;
+      // const { closedPeriod } = listing.attributes.publicData;
       // const displayDatesMaybe = closedPeriod ? calculateDisplayDates(params, closedPeriod) : {};
       const displayDatesMaybe = {};
 
