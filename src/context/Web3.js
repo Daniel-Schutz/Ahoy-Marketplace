@@ -98,6 +98,8 @@ export const Web3Provider = ({ children }) => {
   };
 
   const createBoatNft = async ({ boatDetails, price, uuid }) => {
+    console.log(boatDetails)
+    console.log(price)
     if (!client) {
       console.error("Client is not initialized.");
       return;
@@ -106,9 +108,9 @@ export const Web3Provider = ({ children }) => {
     let hourlyPrice;
     let dailyPrice;
     let sellPrice;
-    const refundabilityPeriod = 0;
-    const deposit = 0;
-    const closedPeriod = 0;
+    const refundabilityPeriod = parseInt(boatDetails.refundPeriod);
+    const deposit = parseInt(0);
+    const closedPeriod = parseInt(boatDetails.closedPeriod);
 
     try {
       if (imageFile) {
