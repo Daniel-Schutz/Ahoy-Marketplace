@@ -152,15 +152,22 @@ const EditListingAvailabilityPanel = props => {
     ],
   };
   const availabilityPlan = listingAttributes?.availabilityPlan || defaultAvailabilityPlan;
+  const { closedPeriod, refundPeriod } = listingAttributes?.publicData;
   const initialValues = valuesFromLastSubmit
     ? valuesFromLastSubmit
-    : createInitialValues(availabilityPlan);
+    : { ...createInitialValues(availabilityPlan), closedPeriod, refundPeriod }; 
 
   const handleSubmit = values => {
+    console.log({ values });
+    const { closedPeriod, refundPeriod } = values;
     setValuesFromLastSubmit(values);
 
+    const updateParams = { 
+      ...createAvailabilityPlan(values), 
+      publicData: { closedPeriod,refundPeriod } 
+    }
     // Final Form can wait for Promises to return.
-    return onSubmit(createAvailabilityPlan(values))
+    return onSubmit(updateParams)
       .then(() => {
         setIsEditPlanModalOpen(false);
       })
@@ -227,6 +234,8 @@ const EditListingAvailabilityPanel = props => {
             <FormattedMessage id="EditListingAvailabilityPanel.availabilityPlanInfo" />
           </p>
         ) : null}
+
+
 
         <InlineTextButton
           className={css.editPlanButton}

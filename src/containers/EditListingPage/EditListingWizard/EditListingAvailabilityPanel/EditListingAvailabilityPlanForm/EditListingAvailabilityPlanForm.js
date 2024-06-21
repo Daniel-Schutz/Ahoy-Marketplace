@@ -6,7 +6,7 @@ import arrayMutators from 'final-form-arrays';
 import classNames from 'classnames';
 
 import { FormattedMessage, injectIntl, intlShape } from '../../../../../util/reactIntl';
-import { Form, Heading, H3, PrimaryButton } from '../../../../../components';
+import { Form, Heading, H3, PrimaryButton, FieldTextInput } from '../../../../../components';
 import FieldTimeZoneSelect from '../FieldTimeZoneSelect';
 import AvailabilityPlanEntries from './AvailabilityPlanEntries';
 
@@ -120,12 +120,35 @@ const EditListingAvailabilityPlanFormComponent = props => {
               })}
             </div>
 
+          
+
             <div className={css.submitButton}>
               {updateListingError ? (
                 <p className={css.error}>
                   <FormattedMessage id="EditListingAvailabilityPlanForm.updateFailed" />
                 </p>
               ) : null}
+
+            <FieldTextInput
+              className={css.input}
+              style = {{marginBottom: "10px"}}
+              id={`${formId}.refund`}
+              name="refundPeriod"
+              label={"Refund Ability Period (In Hours):"}
+              placeholder={"Enter a number"}
+              type="number"
+              min={1}
+            />
+             <FieldTextInput
+              style = {{marginBottom: "10px"}}
+              className={css.input}
+              id={`${formId}.closed`}
+              name="closedPeriod"
+              label={"Closed Period (In Hours):"}
+              placeholder={"Enter a number"}
+              type="number"
+              min={0}
+            />
               <PrimaryButton type="submit" inProgress={submitInProgress} disabled={submitDisabled}>
                 <FormattedMessage id="EditListingAvailabilityPlanForm.saveSchedule" />
               </PrimaryButton>

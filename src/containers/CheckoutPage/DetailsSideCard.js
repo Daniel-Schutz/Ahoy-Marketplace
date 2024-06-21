@@ -36,13 +36,13 @@ const DetailsSideCard = props => {
 
   const { price, publicData } = listing?.attributes || {};
   const unitType = publicData.unitType || 'unknown';
-
+ 
   const { aspectWidth = 1, aspectHeight = 1, variantPrefix = 'listing-card' } =
     layoutListingImageConfig || {};
   const variants = firstImage
     ? Object.keys(firstImage?.attributes?.variants).filter(k => k.startsWith(variantPrefix))
     : [];
-
+  console.log(listing)
   
   return (
     <div className={css.detailsContainerDesktop}>

@@ -170,7 +170,7 @@ const TransactionPanelComponent = (props) => {
 
   const classes = classNames(rootClassName || css.root, className);
 
-  const { qrCode } = useWeb3();
+  console.log( transaction)
 
 
   return (

@@ -1,10 +1,4 @@
-/**
- * This file contains server side endpoints that can be used to perform backend
- * tasks that can not be handled in the browser.
- *
- * The endpoints should not clash with the application routes. Therefore, the
- * endpoints are prefixed in the main server where this file is used.
- */
+// router.js
 
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -15,6 +9,7 @@ const loginAs = require('./api/login-as');
 const transactionLineItems = require('./api/transaction-line-items');
 const initiatePrivileged = require('./api/initiate-privileged');
 const transitionPrivileged = require('./api/transition-privileged');
+const updateTransactionMetadata = require('./api/update-transaction-metadata');
 
 const createUserWithIdp = require('./api/auth/createUserWithIdp');
 
@@ -54,6 +49,7 @@ router.get('/login-as', loginAs);
 router.post('/transaction-line-items', transactionLineItems);
 router.post('/initiate-privileged', initiatePrivileged);
 router.post('/transition-privileged', transitionPrivileged);
+router.post('/update_metadata', updateTransactionMetadata);
 
 // Create user with identity provider (e.g. Facebook or Google)
 // This endpoint is called to create a new user after user has confirmed
