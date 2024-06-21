@@ -141,7 +141,7 @@ const EditListingWizardTab = props => {
     const updateListingValues = isNewURI
       ? updateValues
       : { ...updateValues, id: currentListing.id };
-
+    console.log({tab})
     return onUpdateListingOrCreateListingDraft(tab, updateListingValues)
       .then(r => {
         // In Availability tab, the submitted data (plan) is inside a modal
