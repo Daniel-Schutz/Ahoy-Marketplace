@@ -13,7 +13,7 @@ module.exports = (req, res) => {
     bookingStatus: bookingStatus
   };
   
-  // Chama a função updateMetadata do integrationSdk
+  
   integrationSdk.transactions.updateMetadata(
     {
       id: new UUID(transactionId),

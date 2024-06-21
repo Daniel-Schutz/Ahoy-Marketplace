@@ -27,6 +27,8 @@ exports.nightsBetween = (startDate, endDate) => {
   return nights;
 };
 
+
+
 /**
  * Calculate the number of days between the given dates.
  *
@@ -51,4 +53,20 @@ exports.daysBetween = (startDate, endDate) => {
     throw new Error('End date cannot be before start date');
   }
   return days;
+};
+
+
+
+exports.calculateDisplayDates = (params, closedPeriod) => {
+  const { bookingStart, bookingEnd } = params;
+  const closedPeriodInt = parseInt(closedPeriod, 10); 
+  const bookingBufferEnd = new Date(bookingEnd);
+  bookingBufferEnd.setHours(bookingBufferEnd.getHours() + closedPeriodInt);
+
+  return {
+    bookingStart: bookingStart,
+    bookingEnd: bookingBufferEnd,
+    bookingDisplayStart: bookingStart,
+    bookingDisplayEnd: bookingEnd, 
+  };
 };
