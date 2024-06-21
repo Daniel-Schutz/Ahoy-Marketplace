@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { arrayOf, bool, func, object, oneOfType, shape, string } from 'prop-types';
 // Import contexts and util modules
 import { FormattedMessage, intlShape } from '../../util/reactIntl';
@@ -185,8 +185,76 @@ const handleGenerateQRCodeUrl = (pageData,currentUser) => {
     
 };
 
-const handleSubmit = async (values, process, props, stripe, submitting, setSubmitting) => {
+const metamaskSubmit = async (process, props, submitting, setSubmitting, boatOwner, createRentalNft) => {
+  console.log({process, props, submitting, setSubmitting, createRentalNft, boatOwner});
+  if (submitting) {
+    console.log('in submitting');
+    return;
+  }
+  setSubmitting(true);
 
+  const {
+    history,
+    routeConfiguration,
+    currentUser,
+    onInitiateOrder,
+    onSubmitCallback,
+    pageData,
+    dispatch,
+    setPageData,
+  } = props;
+
+  const rentalDetails = {
+    boatName: pageData.listing.attributes.title,
+    startDate: pageData.orderData.bookingDates.bookingStart,
+    endDate: pageData.orderData.bookingDates.bookingEnd,
+    renterName: currentUser.attributes.profile.displayName,
+    renterId: currentUser.id.uuid,
+  };
+
+  const uuid = pageData.listing.id.uuid;
+  const deposit = pageData.listing.attributes.publicData.deposit || 0;
+
+  try {
+    // Mint the NFT
+    const nftTransaction = await createRentalNft({ rentalDetails, uuid, boatOwner, deposit });
+    if (nftTransaction) {
+      console.log("NFT minted successfully:", nftTransaction);
+
+      // Initiate the order in Sharetribe
+      const orderParams = {
+        listingId: pageData.listing.id,
+        bookingStart: pageData.orderData.bookingDates.bookingStart,
+        bookingEnd: pageData.orderData.bookingDates.bookingEnd,
+        protectedData: { nftTransactionId: nftTransaction.hash },
+      };
+
+      const transaction = await onInitiateOrder(orderParams);
+      if (transaction) {
+        console.log("Order created successfully:", transaction);
+
+        // Navigate to the order details page
+        const orderDetailsPath = pathByRouteName('OrderDetailsPage', routeConfiguration, {
+          id: transaction.id.uuid,
+        });
+
+        setOrderPageInitialValues({
+          initialMessageFailedToTransaction: transaction.id,
+        }, routeConfiguration, dispatch);
+
+        onSubmitCallback();
+        history.push(orderDetailsPath);
+      }
+    }
+  } catch (error) {
+    console.error("Error in MetaMask submission:", error);
+    setSubmitting(false);
+  }
+};
+
+
+
+const handleSubmit = async (values, process, props, stripe, submitting, setSubmitting) => {
   if (submitting) {
     return;
   }
@@ -211,8 +279,9 @@ const handleSubmit = async (values, process, props, stripe, submitting, setSubmi
     setPageData,
     sessionStorageKey,
   } = props;
-  
+
   const [fileName, qrData,qrCodeUrl] = handleGenerateQRCodeUrl(pageData,currentUser); // Gera o QR code e obtém a URL
+
   if (qrCodeUrl === null) {
     setSubmitting(false);
     return;
@@ -230,8 +299,6 @@ const handleSubmit = async (values, process, props, stripe, submitting, setSubmi
     ? currentUser?.stripeCustomer?.defaultPaymentMethod?.attributes?.stripePaymentMethodId
     : null;
 
-  // If paymentIntent status is not waiting user action,
-  // confirmCardPayment has been called previously.
   const hasPaymentIntentUserActionsDone =
     paymentIntent && STRIPE_PI_USER_ACTIONS_DONE_STATUSES.includes(paymentIntent.status);
 
@@ -259,9 +326,6 @@ const handleSubmit = async (values, process, props, stripe, submitting, setSubmi
   };
 
   const shippingDetails = getShippingDetailsMaybe(formValues);
-  // Note: optionalPaymentParams contains Stripe paymentMethod,
-  // but that can also be passed on Step 2
-  // stripe.confirmCardPayment(stripe, { payment_method: stripePaymentMethodId })
   const optionalPaymentParams =
     selectedPaymentFlow === USE_SAVED_CARD && hasDefaultPaymentMethodSaved
       ? { paymentMethod: stripePaymentMethodId }
@@ -269,42 +333,38 @@ const handleSubmit = async (values, process, props, stripe, submitting, setSubmi
       ? { setupPaymentMethodForSaving: true }
       : {};
 
-  // These are the order parameters for the first payment-related transition
-  // which is either initiate-transition or initiate-transition-after-enquiry
   const orderParams = getOrderParams(pageData, shippingDetails, optionalPaymentParams, config, qrCodeUrl);
- 
-  // There are multiple XHR calls that needs to be made against Stripe API and Sharetribe Marketplace API on checkout with payments
+
+  // Existing Stripe payment process
   processCheckoutWithPayment(orderParams, requestPaymentParams)
     .then(async response => {
       const { orderId, messageSuccess, paymentMethodSaved } = response;
-      
+
       qrData.transaction_id = orderId.uuid;
-   
+
       const qrDataJson = JSON.stringify(qrData);
       const quickchartUrl = "https://quickchart.io/qr";
       const quickchartResponse = await axios.get(quickchartUrl, {
         params: { text: qrDataJson, size: "300" },
-        responseType: 'arraybuffer' 
+        responseType: 'arraybuffer'
       });
-  
+
       if (quickchartResponse.status === 200) {
         const imgData = quickchartResponse.data;
         const storageZoneName = 'ahoy-qr-code';
-        const accessKey = '5d1b0c5d-fe35-41e6-8318d24247da-d5a9-40f3';  
+        const accessKey = '5d1b0c5d-fe35-41e6-8318d24247da-d5a9-40f3';
         const baseUrl = "storage.bunnycdn.com";
         const url = `https://${baseUrl}/${storageZoneName}/${fileName}`;
-  
-        // Faz upload da imagem para o BunnyCDN
+
         const uploadResponse = await axios.put(url, imgData, {
           headers: {
             "AccessKey": accessKey,
             "Content-Type": "application/octet-stream",
           },
         });
-  
+
         if (uploadResponse.status === 200 || uploadResponse.status === 201) {
           console.log("QR code URL:", qrCodeUrl);
-        
         } else {
           console.error(`Failed to upload image. Status code: ${uploadResponse.status}, Response: ${uploadResponse.data}`);
         }
@@ -313,8 +373,7 @@ const handleSubmit = async (values, process, props, stripe, submitting, setSubmi
       }
 
       setSubmitting(false);
-     
-      
+
       const initialMessageFailedToTransaction = messageSuccess ? null : orderId;
       const orderDetailsPath = pathByRouteName('OrderDetailsPage', routeConfiguration, {
         id: orderId.uuid,
@@ -333,10 +392,8 @@ const handleSubmit = async (values, process, props, stripe, submitting, setSubmi
       console.error(err);
       setSubmitting(false);
     });
-
-
-   
 };
+
 
 const onStripeInitialized = (stripe, process, props) => {
   const { paymentIntent, onRetrievePaymentIntent, pageData } = props;
@@ -485,9 +542,51 @@ export const CheckoutPageWithPayment = props => {
     orderData?.deliveryMethod === 'shipping' &&
     !hasTransactionPassedPendingPayment(existingTransaction, process);
 
+  console.log({totalPrice})
+  console.log('boat uuid:', listing.id.uuid)
+  console.log({transaction, orderData})
+  // orderdata.bookingdates contains selected rental schedule
+  const { getBoat, createRentalNft } = useWeb3();
  
+  const [boatNft, setBoatNft] = useState(null)
+  useEffect(() => {
+    if (listing?.id?.uuid) {
+      const fetchBoatNft = async () => {
+        try {
+          const boat = await getBoat({ uuid: listing.id.uuid });
+          if (boat) {
+            console.log('Boat has an NFT:', boat);
+            setBoatNft(boat);
+          } else {
+            console.log('Boat does not have an NFT');
+            setBoatNft(null);
+          }
+        } catch (error) {
+          console.error("Error fetching boat NFT:", error);
+          setBoatNft(null);
+        }
+      };
 
- 
+      fetchBoatNft();
+    }
+  }, [listing, getBoat]);
+
+  const handleButtonClick = async (
+    process,
+    props,
+    submitting,
+    setSubmitting,
+    createRentalNft
+  ) => {
+      await metamaskSubmit(
+        process,
+        props,
+        submitting,
+        setSubmitting,
+        boatNft.owner,
+        createRentalNft,
+      );
+  };
     
 
   return (
@@ -521,6 +620,23 @@ export const CheckoutPageWithPayment = props => {
             {errorMessages.speculateErrorMessage}
             {errorMessages.retrievePaymentIntentErrorMessage}
             {errorMessages.paymentExpiredMessage}
+
+            {boatNft && (
+              <button
+                onClick={() =>
+                  handleButtonClick(
+                    process,
+                    props,
+                    submitting,
+                    setSubmitting,
+                    createRentalNft
+                  )
+                }
+              >
+               Rent with Metamask
+              </button>
+            )}
+
 
             {showPaymentForm ? (
               <StripePaymentForm

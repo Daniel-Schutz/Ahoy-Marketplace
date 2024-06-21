@@ -532,6 +532,7 @@ export const BookingDatesFormComponent = props => {
           dayCountAvailableForBooking,
           timeZone
         );
+        console.log('this page is for daily rentals')
 
         return (
           <Form onSubmit={handleSubmit} className={classes} enforcePagePreloadFor="CheckoutPage">
@@ -637,6 +638,7 @@ export const BookingDatesFormComponent = props => {
               <PrimaryButton type="submit" inProgress={fetchLineItemsInProgress}>
                 <FormattedMessage id="BookingDatesForm.requestToBook" />
               </PrimaryButton>
+              
             </div>
             <p className={css.finePrint}>
               {payoutDetailsWarning ? (
