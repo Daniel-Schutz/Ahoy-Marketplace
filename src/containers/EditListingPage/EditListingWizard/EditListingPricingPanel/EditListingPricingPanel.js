@@ -72,7 +72,7 @@ const EditListingPricingPanel = props => {
           initialValues={initialValues}
           onSubmit={values => {
             const { price,deposit } = values;
-
+            price.deposit = deposit;
             // New values for listing attributes
             const updateValues = {
               price
