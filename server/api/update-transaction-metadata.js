@@ -1,32 +1,29 @@
 const { UUID } = require('uuid');
 const sharetribeSdk = require('sharetribe-flex-sdk');
-const { serialize, handleError, getSdk, getTrustedSdk } = require('../api-util/sdk');
+const { serialize, handleError } = require('../api-util/sdk');
 
 const integrationSdk = sharetribeSdk.createInstance({
   clientId: process.env.REACT_APP_INTEGRATION_API_ID,
-  clientSecret: process.env.REACT_APP_INTEGRATION_API_SECRET,
+  clientSecret: process.env.REACT_APP_INTEGRATION_API_SECRET,  // Corrigido de SECRE para SECRET
 });
 
 module.exports = (req, res) => {
   const { transactionId } = req.body;
 
-  const sdk = getSdk(req, res);
-
-  const transactionPromise = () => sdk.transactions.show({ id: transactionId });
-
-  Promise.all([transactionPromise()])
-    .then(([showTransactionResponse]) => {
+  // Primeiro, obtemos a transação atual
+  integrationSdk.transactions.show({ id: transactionId })
+    .then(showTransactionResponse => {
       const transaction = showTransactionResponse.data.data;
-      
-      return getTrustedSdk(req);
-    })
-    .then(trustedSdk => {
-      // const metadata = {
-      //   bookingStatus:bookingStatus
-      // };
 
-      return trustedSdk.transactions.show({
-        id: transactionId
+      // Em seguida, atualizamos os metadados da transação
+      return integrationSdk.transactions.updateMetadata({
+        id: new UUID(transactionId),
+        metadata: {
+          extId: 1234,
+          promotionDiscount: 20
+        }
+      }, {
+        expand: true
       });
     })
     .then(apiResponse => {
