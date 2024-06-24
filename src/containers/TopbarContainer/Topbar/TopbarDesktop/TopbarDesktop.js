@@ -31,9 +31,13 @@ import CustomLinksMenu from './CustomLinksMenu/CustomLinksMenu';
 import css from './TopbarDesktop.module.css';
 import { useWeb3 } from '../../../../context/Web3';
 
-const fetchUpdateTransactionMetadata = ({ transactionId, bookingStatus }) => {
+const fetchUpdateTransactionMetadata = (transactionId, bookingStatus ) => {
   console.log(transactionId)
-  updateTransactionMetadata({transactionId, bookingStatus})
+  const body = {
+    transactionId,
+    bookingStatus
+  }
+  updateTransactionMetadata(body)
     .then(response => {
       console.log(response.data)
     })
@@ -112,9 +116,9 @@ const ProfileMenu = ({ currentPage, currentUser, onLogout, onUpdateProfile }) =>
       const qrCodeDict = JSON.parse(jsonString);
       if (qrCodeDict.author_id === currentUser.id.uuid) {
         console.log("This user can verify the qrCode")
-          const bookingStatus = {bookingStatus: 'booking status'};
-          const transactionId = {transactionId: qrCodeDict.transaction_id};
-          fetchUpdateTransactionMetadata({ transactionId, bookingStatus });
+          const bookingStatus = 'booking status';
+          const transactionId = qrCodeDict.transaction_id;
+          fetchUpdateTransactionMetadata(transactionId, bookingStatus);
 
       } else{
         console.log("This user can't verify the qrCode")

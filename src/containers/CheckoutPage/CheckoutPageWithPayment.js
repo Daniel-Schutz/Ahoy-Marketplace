@@ -87,6 +87,7 @@ const getOrderParams = (pageData, shippingDetails, optionalPaymentParams, config
 
   // These are the order parameters for the first payment-related transition
   // which is either initiate-transition or initiate-transition-after-enquiry
+  const bookingStatus = "Initial Status";
   const orderParams = {
     listingId: pageData?.listing?.id,
     ...deliveryMethodMaybe,
@@ -94,6 +95,7 @@ const getOrderParams = (pageData, shippingDetails, optionalPaymentParams, config
     ...bookingDatesMaybe(pageData.orderData?.bookingDates),
     ...protectedDataMaybe,
     ...optionalPaymentParams,
+    metadata:bookingStatus
   };
   return orderParams;
 };

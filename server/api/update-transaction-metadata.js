@@ -1,53 +1,49 @@
 const { UUID } = require('uuid');
 const sharetribeSdk = require('sharetribe-flex-sdk');
+const { serialize, handleError, getSdk, getTrustedSdk } = require('../api-util/sdk');
+
 const integrationSdk = sharetribeSdk.createInstance({
   clientId: process.env.REACT_APP_INTEGRATION_API_ID,
-  clientSecret: process.env.REACT_APP_INTEGRATION_API_SECRE
+  clientSecret: process.env.REACT_APP_INTEGRATION_API_SECRET,
 });
 
 module.exports = (req, res) => {
-  const { transactionId, bookingStatus } = req.b0ody;
+  const { transactionId } = req.body;
 
-  
-  const metadata = {
-    bookingStatus: bookingStatus
-  };
-  
-  
-  integrationSdk.transactions.updateMetadata(
-    {
-      id: new UUID(transactionId),
-      metadata: metadata 
-    },
-    {
-      expand: true 
-    }
-  )
-  .then(apiResponse => {
-    const { status, statusText, data } = apiResponse;
+  const sdk = getSdk(req, res);
 
-    res
-      .status(status)
-      .set('Content-Type', 'application/json')
-      .send({
-        status,
-        statusText,
-        data,
-      })
-      .end();
-  })
-  .catch(e => {
-    console.error(e);
-    if (e.response) {
-      console.error('Response data:', e.response.data);
-      console.error('Response status:', e.response.status);
-      console.error('Response headers:', e.response.headers);
-    }
-    res
-      .status(500)
-      .send({
-        error: 'An error occurred while updating the transaction metadata.'
-      })
-      .end();
-  });
+  const transactionPromise = () => sdk.transactions.show({ id: transactionId });
+
+  Promise.all([transactionPromise()])
+    .then(([showTransactionResponse]) => {
+      const transaction = showTransactionResponse.data.data;
+      
+      return getTrustedSdk(req);
+    })
+    .then(trustedSdk => {
+      // const metadata = {
+      //   bookingStatus:bookingStatus
+      // };
+
+      return trustedSdk.transactions.show({
+        id: transactionId
+      });
+    })
+    .then(apiResponse => {
+      const { status, statusText, data } = apiResponse;
+      res
+        .status(status)
+        .set('Content-Type', 'application/transit+json')
+        .send(
+          serialize({
+            status,
+            statusText,
+            data,
+          })
+        )
+        .end();
+    })
+    .catch(e => {
+      handleError(res, e);
+    });
 };
