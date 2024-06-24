@@ -14,13 +14,22 @@ module.exports = (req, res) => {
   integrationSdk.transactions.show({ id: transactionId })
     .then(showTransactionResponse => {
       const transaction = showTransactionResponse.data.data;
+      let newBookingStatus = {}
       // const currentBookingStatus = transaction.attributes.metadata.bookingStatus;
+      if (currentBookingStatus === 'Initial Status'){
+        newBookingStatus = {bookingStatus:"Check In Completed"}
+      }
+      else{
+        newBookingStatus = {bookingStatus:"Check In Completed"}
+      }
+
       
 
       // Em seguida, atualizamos os metadados da transação
       return integrationSdk.transactions.updateMetadata({
         id: transactionId,
         metadata: {
+          newBookingStatus
         }
       }, {
         expand: true
