@@ -31,15 +31,15 @@ import CustomLinksMenu from './CustomLinksMenu/CustomLinksMenu';
 import css from './TopbarDesktop.module.css';
 import { useWeb3 } from '../../../../context/Web3';
 
-const fetchUpdateTransactionMetadata = (transactionId, bookingStatus ) => {
+const fetchUpdateTransactionMetadata = (transactionId) => {
   console.log(transactionId)
   const body = {
-    transactionId,
-    bookingStatus
+    transactionId
   }
   updateTransactionMetadata(body)
     .then(response => {
       console.log(response.data)
+      return response.data
     })
     .catch(e => {
       console.log(e)
@@ -85,7 +85,7 @@ const InboxLink = ({ notificationCount, currentUserHasListings }) => {
 const ProfileMenu = ({ currentPage, currentUser, onLogout, onUpdateProfile }) => {
   const { hasWeb3, client, web3Handler } = useWeb3();
   const [showQrReader, setShowQrReader] = useState(false);
-  console.log({client})
+  // console.log({client})
   const currentPageClass = page => {
     const isAccountSettingsPage =
       page === 'AccountSettingsPage' && ACCOUNT_SETTINGS_PAGES.includes(currentPage);
@@ -116,9 +116,11 @@ const ProfileMenu = ({ currentPage, currentUser, onLogout, onUpdateProfile }) =>
       const qrCodeDict = JSON.parse(jsonString);
       if (qrCodeDict.author_id === currentUser.id.uuid) {
         console.log("This user can verify the qrCode")
-          const bookingStatus = 'booking status';
           const transactionId = qrCodeDict.transaction_id;
-          fetchUpdateTransactionMetadata(transactionId, bookingStatus);
+          const response = fetchUpdateTransactionMetadata(transactionId);
+          const bookingStatus = response.attributes.metadata.bookingStatus;
+          // APOS A CHAMADA DESSA FUNÇÃO, QUERO MOSTRAR UMA MENSAGEM NO FRONTEND COM O BOOKINGSTATUS
+
 
       } else{
         console.log("This user can't verify the qrCode")

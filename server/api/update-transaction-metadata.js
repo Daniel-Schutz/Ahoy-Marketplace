@@ -3,8 +3,8 @@ const sharetribeSdk = require('sharetribe-flex-integration-sdk');
 const { serialize, handleError } = require('../api-util/sdk');
 
 const integrationSdk = sharetribeSdk.createInstance({
-  clientId: process.env.REACT_APP_INTEGRATION_API_ID,
-  clientSecret: process.env.REACT_APP_INTEGRATION_API_SECRE, 
+  clientId: process.env.INTEGRATION_API_ID,
+  clientSecret: process.env.INTEGRATION_API_SECRE, 
 });
 
 module.exports = (req, res) => {
@@ -14,22 +14,19 @@ module.exports = (req, res) => {
   integrationSdk.transactions.show({ id: transactionId })
     .then(showTransactionResponse => {
       const transaction = showTransactionResponse.data.data;
-      let newBookingStatus = {}
-      // const currentBookingStatus = transaction.attributes.metadata.bookingStatus;
-      if (currentBookingStatus === 'Initial Status'){
-        newBookingStatus = {bookingStatus:"Check In Completed"}
+      let newBookingStatus = ""
+      if (Object.keys(transaction.attributes.metadata).length === 0 && transaction.attributes.metadata.constructor === Object){
+         newBookingStatus = "Check In Completed"
       }
       else{
-        newBookingStatus = {bookingStatus:"Check In Completed"}
+        newBookingStatus = "Check Out Completed"
       }
 
       
-
-      // Em seguida, atualizamos os metadados da transação
       return integrationSdk.transactions.updateMetadata({
         id: transactionId,
         metadata: {
-          newBookingStatus
+          bookingStatus: newBookingStatus
         }
       }, {
         expand: true

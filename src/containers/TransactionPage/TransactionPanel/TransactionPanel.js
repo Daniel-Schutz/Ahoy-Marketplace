@@ -214,6 +214,7 @@ const TransactionPanelComponent = (props) => {
             <h4 className={css.qrCodeTitle}>
               <FormattedMessage id="TransactionPanel.qrCodeTitle" />
             </h4>
+            <h3>{transaction?.attributes?.metadata?.bookingStatus || "Check-in not completed"}</h3>
             <img
               src={transaction.attributes.protectedData.qrCodeUrl} // Adjust the src according to your requirement
               alt="QR Code for Check-In/Check-Out"
