@@ -175,13 +175,20 @@ export const loadInitialDataForStripePayments = ({
   fetchSpeculatedTransactionIfNeeded(orderParams, pageData, fetchSpeculatedTransaction);
 };
 const handleGenerateQRCodeUrl = (pageData,currentUser) => {
-    const { listing, orderData } = pageData;
-    const fileName = `${uuidv4()}.png`;  
-    const storageZoneName = 'ahoy-qr-code';
-    const qrData = {boat_name: listing.attributes.title, author_id: listing.author.id.uuid, author_name: listing.author.attributes.profile.displayName, start_date: orderData.bookingDates.bookingStart, end_date: orderData.bookingDates.bookingEnd, renter_name:currentUser.attributes.profile.displayName, renter_id: currentUser.id.uuid};
-    const qrCodeUrl =`https://${storageZoneName}.b-cdn.net/${fileName}`;
+    if (processName==='default-booking' ) {
+      const { listing, orderData } = pageData;
+      const fileName = `${uuidv4()}.png`;  
+      const storageZoneName = 'ahoy-qr-code';
+      const qrData = {boat_name: listing.attributes.title, author_id: listing.author.id.uuid, author_name: listing.author.attributes.profile.displayName, start_date: orderData.bookingDates.bookingStart, end_date: orderData.bookingDates.bookingEnd, renter_name:currentUser.attributes.profile.displayName, renter_id: currentUser.id.uuid};
+      const qrCodeUrl =`https://${storageZoneName}.b-cdn.net/${fileName}`;
+      return [fileName, qrData,qrCodeUrl];
+  }
+   else{
 
-    return [fileName, qrData,qrCodeUrl];
+    return ['','','No QR Code Needed!']
+   }
+
+    
 
     
     
@@ -282,12 +289,10 @@ const handleSubmit = async (values, process, props, stripe, submitting, setSubmi
     sessionStorageKey,
   } = props;
 
-  const [fileName, qrData,qrCodeUrl] = handleGenerateQRCodeUrl(pageData,currentUser); // Gera o QR code e obtém a URL
 
-  if (qrCodeUrl === null) {
-    setSubmitting(false);
-    return;
-  }
+  const [fileName, qrData,qrCodeUrl] = handleGenerateQRCodeUrl(pageData,currentUser); 
+
+
 
 
   const { card, message, paymentMethod: selectedPaymentMethod, formValues } = values;
@@ -342,7 +347,8 @@ const handleSubmit = async (values, process, props, stripe, submitting, setSubmi
     .then(async response => {
       const { orderId, messageSuccess, paymentMethodSaved } = response;
 
-      qrData.transaction_id = orderId.uuid;
+      if (processName==='default-booking' ) {
+        qrData.transaction_id = orderId.uuid;
 
       const qrDataJson = JSON.stringify(qrData);
       const quickchartUrl = "https://quickchart.io/qr";
@@ -354,7 +360,7 @@ const handleSubmit = async (values, process, props, stripe, submitting, setSubmi
       if (quickchartResponse.status === 200) {
         const imgData = quickchartResponse.data;
         const storageZoneName = 'ahoy-qr-code';
-        const accessKey = '5d1b0c5d-fe35-41e6-8318d24247da-d5a9-40f3';
+        const accessKey = process.env.BUNNY_KEY;
         const baseUrl = "storage.bunnycdn.com";
         const url = `https://${baseUrl}/${storageZoneName}/${fileName}`;
 
@@ -373,7 +379,7 @@ const handleSubmit = async (values, process, props, stripe, submitting, setSubmi
       } else {
         console.error(`Failed to generate QR code. Status code: ${quickchartResponse.status}`);
       }
-
+      }
       setSubmitting(false);
 
       const initialMessageFailedToTransaction = messageSuccess ? null : orderId;

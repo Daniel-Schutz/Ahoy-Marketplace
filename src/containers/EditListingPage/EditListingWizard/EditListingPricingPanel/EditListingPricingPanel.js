@@ -20,7 +20,7 @@ const { Money } = sdkTypes;
 const getInitialValues = params => {
   const { listing } = params;
   const { price } = listing?.attributes || {};
-  const { deposit } = listing?.attributes.publicData
+  const { deposit } = listing?.attributes.publicData;
 
 
   return { price,deposit };

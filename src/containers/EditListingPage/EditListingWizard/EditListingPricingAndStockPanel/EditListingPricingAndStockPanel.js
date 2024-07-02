@@ -26,6 +26,7 @@ const getInitialValues = props => {
   const { listing, listingTypes } = props;
   const isPublished = listing?.id && listing?.attributes?.state !== LISTING_STATE_DRAFT;
   const price = listing?.attributes?.price;
+  const { deposit } = listing?.attributes.publicData;
   const currentStock = listing?.currentStock;
 
   const publicData = listing?.attributes?.publicData;
@@ -46,7 +47,7 @@ const getInitialValues = props => {
       : 1;
   const stockTypeInfinity = [];
 
-  return { price, stock, stockTypeInfinity };
+  return { price, stock, stockTypeInfinity,deposit };
 };
 
 const EditListingPricingAndStockPanel = props => {
@@ -105,7 +106,7 @@ const EditListingPricingAndStockPanel = props => {
           className={css.form}
           initialValues={initialValues}
           onSubmit={values => {
-            const { price, stock, stockTypeInfinity } = values;
+            const { price, stock, stockTypeInfinity, deposit } = values;
 
             // Update stock only if the value has changed, or stock is infinity in stockType,
             // but not current stock is a small number (might happen with old listings)
