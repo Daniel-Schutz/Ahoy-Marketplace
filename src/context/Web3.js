@@ -36,31 +36,88 @@ export const Web3Provider = ({ children }) => {
 
   const web3Handler = async () => {
     if (!window.ethereum) return;
+  
+    const appChainId = '0x7A69'; 
+    const appChainParams = {
+      chainId: appChainId,
+      chainName: 'Localhost', 
+      nativeCurrency: {
+        name: 'ETH', 
+        symbol: 'ETH', 
+        decimals: 18,
+      },
+      rpcUrls: ['http://127.0.0.1:8545'], 
+      blockExplorerUrls: ['http://127.0.0.1:8545'], 
+    };
 
+    //the commented code is for when the contracts are actually deployed on ethereum
+    // const appChainId = '0x1'; 
+    // const appChainParams = {
+    //   chainId: appChainId,
+    //   chainName: 'Ethereum Mainnet',
+    //   nativeCurrency: {
+    //     name: 'Ethereum',
+    //     symbol: 'ETH',
+    //     decimals: 18,
+    //   },
+    //   rpcUrls: ['https://mainnet.infura.io/v3/YOUR_INFURA_PROJECT_ID'], 
+    //   blockExplorerUrls: ['https://etherscan.io'],
+    // };
+  
     try {
       setLoading(true);
-
+  
       const [account] = await window.ethereum.request({ method: 'eth_requestAccounts' });
       const chainId = await window.ethereum.request({ method: 'eth_chainId' });
-
+  
+      if (chainId !== appChainId) {
+        try {
+          // Try to switch to the app network
+          await window.ethereum.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: appChainId }],
+          });
+        } catch (switchError) {
+          // This error code indicates that the chain has not been added to MetaMask
+          if (switchError.code === 4902) {
+            try {
+              // Try to add the app network
+              await window.ethereum.request({
+                method: 'wallet_addEthereumChain',
+                params: [appChainParams],
+              });
+            } catch (addError) {
+              console.error("Failed to add app network to MetaMask:", addError);
+              setLoading(false);
+              return;
+            }
+          } else {
+            console.error("Failed to switch to app network:", switchError);
+            setLoading(false);
+            return;
+          }
+        }
+      }
+  
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const signer = provider.getSigner();
-
+  
       setClient({
         account,
         signer,
-        chainId: parseInt(chainId, 16),
+        chainId: parseInt(appChainId, 16),
         provider,
       });
-
+  
       loadContracts(signer);
-
       setLoading(false);
     } catch (error) {
       console.error("Error connecting to web3:", error);
       setLoading(false);
     }
   };
+  
+  
 
   const loadContracts = (signer) => {
     const boatsContract = new ethers.Contract(BoatAddress.address, BoatAbi.abi, signer);
