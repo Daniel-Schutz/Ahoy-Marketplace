@@ -423,3 +423,22 @@
   composes: p from global;
   font-weight: var(--fontWeightBold);
 }
+
+
+.orWrapper {
+  display: flex;
+  align-items: center;
+  margin: 16px 0;
+}
+
+.orLine {
+  flex: 1;
+  height: 1px;
+  background-color: #ccc;
+}
+
+.orText {
+  margin: 0 12px;
+  color: #888;
+  font-size: 14px;
+}

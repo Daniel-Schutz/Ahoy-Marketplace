@@ -4,6 +4,7 @@ import { compose } from 'redux';
 import { Form as FinalForm } from 'react-final-form';
 import arrayMutators from 'final-form-arrays';
 import classNames from 'classnames';
+import { Tooltip } from 'react-tooltip';
 
 import { FormattedMessage, injectIntl, intlShape } from '../../../../../util/reactIntl';
 import { Form, Heading, H3, PrimaryButton, FieldTextInput } from '../../../../../components';
@@ -13,8 +14,8 @@ import AvailabilityPlanEntries from './AvailabilityPlanEntries';
 import css from './EditListingAvailabilityPlanForm.module.css';
 
 /**
- * User might create entries inside the day of week in what ever order.
- * We sort them before submitting to Marketplace API
+ * User might create entries inside the day of week in whatever order.
+ * We sort them before submitting to Marketplace API.
  */
 const sortEntries = () => (a, b) => {
   if (a.startTime && b.startTime) {
@@ -26,7 +27,7 @@ const sortEntries = () => (a, b) => {
 };
 
 /**
- * Handle submitted values: sort entries within the day of week
+ * Handle submitted values: sort entries within the day of week.
  * @param {Redux Thunk} onSubmit promise fn.
  * @param {Array<string>} weekdays ['mon', 'tue', etc.]
  */
@@ -120,8 +121,6 @@ const EditListingAvailabilityPlanFormComponent = props => {
               })}
             </div>
 
-          
-
             <div className={css.submitButton}>
               {updateListingError ? (
                 <p className={css.error}>
@@ -129,26 +128,48 @@ const EditListingAvailabilityPlanFormComponent = props => {
                 </p>
               ) : null}
 
-            <FieldTextInput
-              className={css.input}
-              style = {{marginBottom: "10px"}}
-              id={`${formId}.refund`}
-              name="refundPeriod"
-              label={"Refund Ability Period (In Hours):"}
-              placeholder={"Enter a number"}
-              type="number"
-              min={1}
-            />
-             <FieldTextInput
-              style = {{marginBottom: "10px"}}
-              className={css.input}
-              id={`${formId}.closed`}
-              name="closedPeriod"
-              label={"Closed Period (In Hours):"}
-              placeholder={"Enter a number"}
-              type="number"
-              min={0}
-            />
+              <div className={css.inputGroup}>
+                <FieldTextInput
+                  className={css.input}
+                  style={{ marginBottom: "10px" }}
+                  id={`${formId}.refund`}
+                  name="refundPeriod"
+                  label={
+                    <>
+                      {"Refund Ability Period (In Hours):"}
+                      <span data-tooltip-id="refundTip" className={css.tooltipIcon}>?</span>
+                      <Tooltip id="refundTip" place="right" effect="solid">
+                        Enter the number of hours within which a refund can be requested.
+                      </Tooltip>
+                    </>
+                  }
+                  placeholder={"Enter a number"}
+                  type="number"
+                  min={1}
+                />
+              </div>
+
+              <div className={css.inputGroup}>
+                <FieldTextInput
+                  style={{ marginBottom: "10px" }}
+                  className={css.input}
+                  id={`${formId}.closed`}
+                  name="closedPeriod"
+                  label={
+                    <>
+                      {"Closed Period (In Hours):"}
+                      <span data-tooltip-id="closedTip" className={css.tooltipIcon}>?</span>
+                      <Tooltip id="closedTip" place="right" effect="solid">
+                        Enter the number of hours after which the listing will be closed.
+                      </Tooltip>
+                    </>
+                  }
+                  placeholder={"Enter a number"}
+                  type="number"
+                  min={0}
+                />
+              </div>
+
               <PrimaryButton type="submit" inProgress={submitInProgress} disabled={submitDisabled}>
                 <FormattedMessage id="EditListingAvailabilityPlanForm.saveSchedule" />
               </PrimaryButton>

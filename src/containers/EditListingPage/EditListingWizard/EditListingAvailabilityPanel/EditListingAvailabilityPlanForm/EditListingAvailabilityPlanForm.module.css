@@ -74,3 +74,23 @@
     padding-bottom: unset;
   }
 }
+
+.inputGroup {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.tooltipIcon {
+  margin-left: 8px; 
+  color: #888;
+  cursor: pointer;
+  font-size: 14px;
+  border: 1px solid #888;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  display: inline-flex; 
+  justify-content: center;
+  align-items: center;
+}

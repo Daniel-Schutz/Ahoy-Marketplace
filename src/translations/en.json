@@ -1073,7 +1073,7 @@
   "TransactionPanel.messageDeletedListing": "However, the listing is deleted and can't be viewed anymore.",
   "TransactionPanel.messageLoadingFailed": "Something went wrong while loading messages. Please refresh the page and try again.",
   "TransactionPanel.paymentMethodsPageLink": "payment methods page",
-  "TransactionPanel.qrCodeTitle": "QR Code for Check In/Checkout",
+  "TransactionPanel.qrCodeTitle": "QR Code for Check In/Checkout ",
   "TransactionPanel.pickupInfoHeading": "Pickup address",
   "TransactionPanel.salePaymentPendingInfo": "{customerName} has 15 minutes to confirm the payment.",
   "TransactionPanel.savePaymentMethodFailed": "Saving default payment method failed. Go to {paymentMethodsPageLink} to try again.",

@@ -20,7 +20,7 @@ const { Money } = sdkTypes;
 const getInitialValues = params => {
   const { listing } = params;
   const { price } = listing?.attributes || {};
-  const { deposit } = listing?.attributes.publicData;
+  const { deposit } = listing?.attributes.publicData || '';
 
 
   return { price,deposit };
@@ -72,12 +72,10 @@ const EditListingPricingPanel = props => {
           initialValues={initialValues}
           onSubmit={values => {
             const { price,deposit } = values;
-       
-            // New values for listing attributes
             const updateValues = {
               price,
               publicData: {
-                deposit,
+                deposit: {amount:deposit.amount, currency:deposit.currency},
                 }
         
             };

@@ -22,6 +22,7 @@ import DiminishedActionButtonMaybe from './DiminishedActionButtonMaybe';
 import PanelHeading from './PanelHeading';
 import css from './TransactionPanel.module.css';
 import { useWeb3 } from '../../../context/Web3';
+import { Tooltip } from 'react-tooltip';
 
 const displayNames = (currentUser, provider, customer, intl) => {
   const authorDisplayName = <UserDisplayName user={provider} intl={intl} />;
@@ -170,8 +171,7 @@ const TransactionPanelComponent = (props) => {
 
   const classes = classNames(rootClassName || css.root, className);
 
-  console.log( transaction)
-
+  const showQRCodeSection = stateData.processName === 'default-booking';
 
   return (
     <div className={classes}>
@@ -210,17 +210,27 @@ const TransactionPanelComponent = (props) => {
             listingDeleted={listingDeleted}
           />
 
-          <div className={css.qrCodeSection}>
-            <h4 className={css.qrCodeTitle}>
-              <FormattedMessage id="TransactionPanel.qrCodeTitle" />
-            </h4>
-            <h3>{transaction?.attributes?.metadata?.bookingStatus || "Check-in not completed"}</h3>
-            <img
-              src={transaction.attributes.protectedData.qrCodeUrl} // Adjust the src according to your requirement
-              alt="QR Code for Check-In/Check-Out"
-              className={css.qrCodeImage}
-            />
-          </div>
+          {showQRCodeSection && (
+            <div className={css.qrCodeSection}>
+              <h4 className={css.qrCodeTitle}>
+                <FormattedMessage id="TransactionPanel.qrCodeTitle" />
+                <span
+                  data-tooltip-id="tooltipQrCode"
+                  data-tooltip-content="To perform operations, the boat owner must scan the QR code."
+                  className={css.tooltipIcon}
+                >
+                  ?
+                </span>
+                <Tooltip id="tooltipQrCode" />
+              </h4>
+              <h3>{transaction?.attributes?.metadata?.bookingStatus || "Check-in not completed"}</h3>
+              <img
+                src={transaction.attributes.protectedData.qrCodeUrl} 
+                alt="QR Code for Check-In/Check-Out"
+                className={css.qrCodeImage}
+              />
+            </div>
+          )}
 
           <InquiryMessageMaybe
             protectedData={protectedData}

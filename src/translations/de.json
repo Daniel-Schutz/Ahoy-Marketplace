@@ -1073,7 +1073,7 @@
   "TransactionPanel.messageDeletedListing": "Der Eintrag wurde jedoch gelöscht und kann nicht mehr angezeigt werden.",
   "TransactionPanel.messageLoadingFailed": "Beim Laden der Nachrichten ist ein Fehler aufgetreten. Bitte aktualisiere die Seite und versuche es erneut.",
   "TransactionPanel.paymentMethodsPageLink": "Zahlungsmethodenseite",
-  "TransactionPanel.qrCodeTitle": "QR-Code für Check-In/Checkout",
+  "TransactionPanel.qrCodeTitle": "QR-Code für Check-In/Checkout ",
   "TransactionPanel.pickupInfoHeading": "Abholadresse",
   "TransactionPanel.salePaymentPendingInfo": "{customerName} hat 15 Minuten Zeit, die Zahlung zu bestätigen.",
   "TransactionPanel.savePaymentMethodFailed": "Speichern der Standardzahlungsmethode fehlgeschlagen. Gehe zur {paymentMethodsPageLink} um erneut zu versuchen.",

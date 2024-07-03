@@ -583,3 +583,40 @@
     margin-top: 16px;
   }
 }
+
+
+.qrCodeSection {
+  margin-top: 1rem;
+}
+
+.qrCodeTitle {
+  display: flex;
+  align-items: center;
+  font-size: 1.2rem;
+}
+
+.tooltipIcon {
+  margin-left: 8px; 
+  color: #888;
+  cursor: pointer;
+  font-size: 14px;
+  border: 1px solid #888;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.qrCodeImage {
+  width: 200px;
+  height: 200px;
+  margin-top: 0.5rem;
+}
+
+
+.tooltipIcon:hover {
+  color: #555;
+  border-color: #555;
+}

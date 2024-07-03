@@ -1073,7 +1073,7 @@
   "TransactionPanel.messageDeletedListing": "Sin embargo, el anuncio ha sido borrado y ya no es visible.",
   "TransactionPanel.messageLoadingFailed": "Algo salió mal al cargar los mensajes. Actualiza la página e inténtalo de nuevo.",
   "TransactionPanel.paymentMethodsPageLink": "página de formas de pago",
-  "TransactionPanel.qrCodeTitle": "Código QR para Check In/Checkout",
+  "TransactionPanel.qrCodeTitle": "Código QR para Check In/Checkout ",
   "TransactionPanel.pickupInfoHeading": "Dirección de recolección",
   "TransactionPanel.salePaymentPendingInfo": "{customerName} tiene 15 minutos para confirmar el pago.",
   "TransactionPanel.savePaymentMethodFailed": "No se pudo guardar el método de pago. Ve a {paymentMethodsPageLink} e inténtalo de nuevo.",

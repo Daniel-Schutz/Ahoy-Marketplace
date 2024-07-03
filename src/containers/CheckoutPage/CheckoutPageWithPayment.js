@@ -10,7 +10,7 @@ import { isTransactionInitiateListingNotFoundError } from '../../util/errors';
 import { getProcess, isBookingProcessAlias } from '../../transactions/transaction';
 
 // Import shared components
-import { H3, H4, NamedLink, OrderBreakdown, Page } from '../../components';
+import { H3, H4, NamedLink, OrderBreakdown, Page, Button } from '../../components';
 
 import {
   bookingDatesMaybe,
@@ -630,7 +630,8 @@ export const CheckoutPageWithPayment = props => {
             {errorMessages.paymentExpiredMessage}
 
             {boatNft && (
-              <button
+              <div>
+              <Button
                 onClick={() =>
                   handleButtonClick(
                     process,
@@ -642,7 +643,13 @@ export const CheckoutPageWithPayment = props => {
                 }
               >
                Rent with Metamask
-              </button>
+              </Button>
+              <div className={css.orWrapper}>
+              <div className={css.orLine}></div>
+              <div className={css.orText}>Or</div>
+              <div className={css.orLine}></div>
+              </div>
+              </div>
             )}
 
 

@@ -199,16 +199,7 @@ export const EditListingPricingAndStockFormComponent = props => (
           )}
           {setStockError ? <p className={css.error}>{stockErrorMessage}</p> : null}
 
-          <FieldCurrencyInput
-            id={`${formId}deposit`}
-            name="deposit"
-            className={css.input}
-            autoFocus={autoFocus}
-            label={"Deposit"}
-            placeholder={"Add a deposit value..."}
-            currencyConfig={appSettings.getCurrencyFormatting(marketplaceCurrency)}
-          
-          />
+
 
           <Button
             className={css.submitButton}
