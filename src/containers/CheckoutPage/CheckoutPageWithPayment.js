@@ -8,7 +8,7 @@ import { ensureTransaction } from '../../util/data';
 import { createSlug } from '../../util/urlHelpers';
 import { isTransactionInitiateListingNotFoundError } from '../../util/errors';
 import { getProcess, isBookingProcessAlias } from '../../transactions/transaction';
-
+import BitpayPage from './BitpayPage.js';
 // Import shared components
 import { H3, H4, NamedLink, OrderBreakdown, Page, Button } from '../../components';
 
@@ -579,6 +579,15 @@ export const CheckoutPageWithPayment = props => {
     }
   }, [listing, getBoat]);
 
+  const handleBitpayTestClick = () =>{
+     return(
+        <Page title={title} scrollingDisabled={scrollingDisabled}>
+        <CustomTopbar intl={intl} linkToExternalSite={config?.topbar?.logoLink} />
+        <BitpayPage/>
+      </Page>
+      )
+  }
+
   const handleButtonClick = async (
     process,
     props,
@@ -594,6 +603,7 @@ export const CheckoutPageWithPayment = props => {
         boatNft.owner,
         createRentalNft,
       );
+
   };
     
 
@@ -640,6 +650,7 @@ export const CheckoutPageWithPayment = props => {
                     setSubmitting,
                     createRentalNft
                   )
+      
                 }
               >
                Rent with Metamask

@@ -37,6 +37,8 @@ const TermsOfServicePage = loadable(() => import(/* webpackChunkName: "TermsOfSe
 const TransactionPage = loadable(() => import(/* webpackChunkName: "TransactionPage" */ '../containers/TransactionPage/TransactionPage'));
 const ReservationPage  = loadable(() => import(/* webpackChunkName: "TransactionPage" */ '../containers/FormPage/BoatReservationForm'));
 const SellPage  = loadable(() => import(/* webpackChunkName: "TransactionPage" */ '../containers/FormPage/BoatSellForm'));
+const BitpayPage  = loadable(() => import(/* webpackChunkName: "TransactionPage" */ '../containers/CheckoutPage/BitpayPage'));
+
 
 // Styleguide helps you to review current components and develop new ones
 const StyleguidePage = loadable(() => import(/* webpackChunkName: "StyleguidePage" */ '../containers/StyleguidePage/StyleguidePage'));
