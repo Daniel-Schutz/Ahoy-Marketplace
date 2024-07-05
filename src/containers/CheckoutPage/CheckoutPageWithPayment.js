@@ -499,14 +499,16 @@ export const CheckoutPageWithPayment = props => {
 
   // Allow showing page when currentUser is still being downloaded,
   // but show payment form only when user info is loaded.
-  const showPaymentForm = !!(
+
+  const [showPaymentForm, setShowPaymentForm] = useState(!!(
     currentUser &&
     !listingNotFound &&
     !initiateOrderError &&
     !speculateTransactionError &&
     !retrievePaymentIntentError &&
     !isPaymentExpired
-  );
+  ));
+
 
   const firstImage = listing?.images?.length > 0 ? listing.images[0] : null;
 
@@ -580,12 +582,12 @@ export const CheckoutPageWithPayment = props => {
   }, [listing, getBoat]);
 
   const handleBitpayTestClick = () =>{
-     return(
-        <Page title={title} scrollingDisabled={scrollingDisabled}>
-        <CustomTopbar intl={intl} linkToExternalSite={config?.topbar?.logoLink} />
-        <BitpayPage/>
-      </Page>
-      )
+    if (showPaymentForm === true) {
+      setShowPaymentForm(false);
+    } else {
+      setShowPaymentForm(true);
+    }
+
   }
 
   const handleButtonClick = async (
@@ -639,21 +641,22 @@ export const CheckoutPageWithPayment = props => {
             {errorMessages.retrievePaymentIntentErrorMessage}
             {errorMessages.paymentExpiredMessage}
 
-            {boatNft && (
+            {/*boatNft*/ true && (
               <div>
               <Button
                 onClick={() =>
-                  handleButtonClick(
-                    process,
-                    props,
-                    submitting,
-                    setSubmitting,
-                    createRentalNft
-                  )
+                  // handleButtonClick(
+                  //   process,
+                  //   props,
+                  //   submitting,
+                  //   setSubmitting,
+                  //   createRentalNft
+                  // )
+                  handleBitpayTestClick()
       
                 }
               >
-               Rent with Metamask
+                 {showPaymentForm ? 'Pay with Metamask' : 'Pay with Stripe'}
               </Button>
               <div className={css.orWrapper}>
               <div className={css.orLine}></div>
@@ -699,6 +702,11 @@ export const CheckoutPageWithPayment = props => {
                 marketplaceName={config.marketplaceName}
                 isBooking={isBookingProcessAlias(transactionProcessAlias)}
                 isFuzzyLocation={config.maps.fuzzy.enabled}
+              />
+            ) : null}
+
+          {!showPaymentForm ? (
+              <BitpayPage
               />
             ) : null}
  

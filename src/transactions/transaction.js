@@ -4,6 +4,7 @@ import * as purchaseProcess from './transactionProcessPurchase';
 import * as bookingProcess from './transactionProcessBooking';
 import * as inquiryProcess from './transactionProcessInquiry';
 import * as bitpayBookingProcess from './transactionProcessBitpayBooking';
+import * as bitpayPurchaseProcess from './transactionProcessBitpayPurchase';
 // Supported unit types
 // Note: These are passed to translations/microcopy in certain cases.
 //       Therefore, they can't contain wordbreaks like '-' or space ' '
@@ -18,6 +19,7 @@ export const PURCHASE_PROCESS_NAME = 'default-purchase';
 export const BOOKING_PROCESS_NAME = 'default-booking';
 export const INQUIRY_PROCESS_NAME = 'default-inquiry';
 export const BITPAY_BOOKING_PROCESS_NAME = 'bitpay-default-booking';
+export const BITPAY_PURCHASE_PROCESS_NAME = 'bitpay-default-purchase';
 
 /**
  * A process should export:
@@ -54,8 +56,14 @@ const PROCESSES = [
   {
     name: BITPAY_BOOKING_PROCESS_NAME,
     alias: `${BITPAY_BOOKING_PROCESS_NAME}/release-1`,
-    process: bookingProcess,
+    process: bitpayBookingProcess,
     unitTypes: [DAY, NIGHT, HOUR],
+  },
+  {
+    name: BITPAY_PURCHASE_PROCESS_NAME,
+    alias: `${BITPAY_PURCHASE_PROCESS_NAME}/release-1`,
+    process: bitpayPurchaseProcess,
+    unitTypes: [ITEM],
   },
 ];
 
@@ -277,7 +285,7 @@ export const getAllTransitionsForEveryProcess = () => {
 export const isPurchaseProcess = processName => {
   const latestProcessName = resolveLatestProcessName(processName);
   const processInfo = PROCESSES.find(process => process.name === latestProcessName);
-  return [PURCHASE_PROCESS_NAME].includes(processInfo?.name);
+  return [PURCHASE_PROCESS_NAME, BITPAY_PURCHASE_PROCESS_NAME].includes(processInfo?.name);
 };
 
 /**

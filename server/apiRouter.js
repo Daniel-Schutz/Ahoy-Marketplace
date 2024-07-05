@@ -12,7 +12,7 @@ const transitionPrivileged = require('./api/transition-privileged');
 const updateTransactionMetadata = require('./api/update-transaction-metadata');
 const bitpayInitiatePrivileged = require('./api/bitpay-initiate-privileged');
 const createUserWithIdp = require('./api/auth/createUserWithIdp');
-
+const createBoatNft = require('./api/create-boat-nft');
 const { authenticateFacebook, authenticateFacebookCallback } = require('./api/auth/facebook');
 const { authenticateGoogle, authenticateGoogleCallback } = require('./api/auth/google');
 
@@ -51,6 +51,8 @@ router.post('/initiate-privileged', initiatePrivileged);
 router.post('/bitpay-initiate-privileged', bitpayInitiatePrivileged);
 router.post('/transition-privileged', transitionPrivileged);
 router.post('/update_metadata', updateTransactionMetadata);
+router.post('/create-boat-nft', createBoatNft);
+
 
 // Create user with identity provider (e.g. Facebook or Google)
 // This endpoint is called to create a new user after user has confirmed

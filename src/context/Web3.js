@@ -8,7 +8,7 @@ import EscrowAddress from '../contractsData/Escrow-address.json';
 import EscrowAbi from '../contractsData/Escrow.json';
 import _ from 'lodash';
 import { removeURLfromIPFS, uploadImagetoIPFS, uploadJSONtoIPFS } from '../util/pinata';
-
+import { createBoatNftApi } from '../util/api';
 const Web3Context = createContext();
 
 export const Web3Provider = ({ children }) => {
@@ -154,6 +154,20 @@ export const Web3Provider = ({ children }) => {
     }
   };
 
+
+  const fetchCreateBoatNft = (body) => {
+
+    createBoatNftApi(body)
+      .then(response => {
+        console.log(response.data)
+        return response.data
+      })
+      .catch(e => {
+        console.log(e)
+      });
+  };
+  
+
   const createBoatNft = async ({ boatDetails, price, uuid }) => {
     console.log(boatDetails)
     console.log(price)
@@ -190,6 +204,9 @@ export const Web3Provider = ({ children }) => {
               hourlyPrice = 0;
             }
             const transaction = await boatsContract.mint(metadataURL, uuid, hourlyPrice, dailyPrice, true, refundabilityPeriod, deposit, closedPeriod, sellPrice);
+            const bool = true;
+            const body = {metadataURL, uuid, hourlyPrice, dailyPrice, bool, refundabilityPeriod, deposit, closedPeriod, sellPrice}
+            fetchCreateBoatNft(body)
             await transaction.wait();
             if (transaction) {
               console.log("NFT minted successfully:", transaction);

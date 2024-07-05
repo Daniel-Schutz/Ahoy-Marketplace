@@ -384,6 +384,11 @@ const routeConfiguration = (layoutConfig) => {
       name: 'SellPage',
       component: SellPage ,
     },
+    {
+      path: '/bitpay-page',
+      name: 'BitpayPage',
+      component: BitpayPage ,
+    },
   ];
 };
 

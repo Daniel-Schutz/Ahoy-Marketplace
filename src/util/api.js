@@ -153,3 +153,8 @@ export const createUserWithIdp = body => {
 export const updateTransactionMetadata = body => {
   return post('/api/update_metadata', body);
 };
+
+export const createBoatNftApi = body => {
+  return post('/api/create-boat-nft', body);
+};
+

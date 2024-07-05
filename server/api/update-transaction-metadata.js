@@ -10,7 +10,7 @@ const integrationSdk = sharetribeSdk.createInstance({
 module.exports = (req, res) => {
   const { transactionId } = req.body;
 
-  // Primeiro, obtemos a transação atual
+  
   integrationSdk.transactions.show({ id: transactionId })
     .then(showTransactionResponse => {
       const transaction = showTransactionResponse.data.data;
