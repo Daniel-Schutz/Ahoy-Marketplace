@@ -1,5 +1,5 @@
 module.exports = (req, res) => {
-    const { metadataURL, uuid, hourlyPrice, dailyPrice, bool, refundabilityPeriod, deposit, closedPeriod, sellPrice } = req.body;
+    const { boat_uuid, account_address, price } = req.body;
     const { ethers } = require('hardhat');
     const { expect } = require('chai');
     const { deployContract } = require('./utils/setup');
