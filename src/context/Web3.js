@@ -1,11 +1,16 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { ethers } from 'ethers';
-import BoatAddress from '../contractsData/Ahoy-address.json';
-import BoatAbi from '../contractsData/Ahoy.json';
-import RentalAddress from '../contractsData/AhoyRental-address.json';
-import RentalAbi from '../contractsData/AhoyRental.json';
-import EscrowAddress from '../contractsData/Escrow-address.json';
-import EscrowAbi from '../contractsData/Escrow.json';
+import { formatUnits } from 'ethers/lib/utils';
+import USDCoinAddress from '../contractsData/USDCoin-address.json';
+import USDCoinAbi from '../contractsData/USDCoin.json';
+import AhoyTokenizedBoatsAddress from '../contractsData/AhoyTokenizedBoats-address.json';
+import AhoyTokenizedBoatsAbi from '../contractsData/AhoyTokenizedBoats.json';
+import AhoyMarketAddress from '../contractsData/AhoyMarket-address.json';
+import AhoyMarketAbi from '../contractsData/AhoyMarket.json';
+import RentalTermsManagerAddress from '../contractsData/RentalTermsManager-address.json';
+import RentalTermsManagerAbi from '../contractsData/RentalTermsManager.json';
+import AhoyRentalsAddress from '../contractsData/AhoyRentals-address.json';
+import AhoyRentalsAbi from '../contractsData/AhoyRentals.json';
 import _ from 'lodash';
 import { removeURLfromIPFS, uploadImagetoIPFS, uploadJSONtoIPFS } from '../util/pinata';
 import { createBoatNftApi } from '../util/api';
@@ -14,9 +19,11 @@ const Web3Context = createContext();
 export const Web3Provider = ({ children }) => {
   const [client, setClient] = useState(null);
   const [hasWeb3, setHasWeb3] = useState(false);
+  const [usdcContract, setUsdcContract] = useState(null);
   const [boatsContract, setBoatsContract] = useState(null);
+  const [marketContract, setMarketContract] = useState(null);
+  const [rentalTermsContract, setRentalTermsContract] = useState(null);
   const [rentalContract, setRentalContract] = useState(null);
-  const [escrowContract, setEscrowContract] = useState(null);
   const [loading, setLoading] = useState(false);
   const [currentlyListed, setCurrentlyListed] = useState(null);
   const [imageFile, setImageFile] = useState(null);
@@ -109,8 +116,9 @@ export const Web3Provider = ({ children }) => {
         provider,
       });
   
-      loadContracts(signer);
+      loadContracts(signer, account);
       setLoading(false);
+      // await printUserBalance(account, usdc);
     } catch (error) {
       console.error("Error connecting to web3:", error);
       setLoading(false);
@@ -119,14 +127,20 @@ export const Web3Provider = ({ children }) => {
   
   
 
-  const loadContracts = (signer) => {
-    const boatsContract = new ethers.Contract(BoatAddress.address, BoatAbi.abi, signer);
-    const rentalContract = new ethers.Contract(RentalAddress.address, RentalAbi.abi, signer);
-    const escrowContract = new ethers.Contract(EscrowAddress.address, EscrowAbi.abi, signer);
+  const loadContracts = async (signer, account) => {
+    const usdcContract = new ethers.Contract(USDCoinAddress.address, USDCoinAbi.abi, signer);
+    const boatsContract = new ethers.Contract(AhoyTokenizedBoatsAddress.address, AhoyTokenizedBoatsAbi.abi, signer);
+    const marketContract = new ethers.Contract(AhoyMarketAddress.address, AhoyMarketAbi.abi, signer);
+    const rentalTermsContract = new ethers.Contract(RentalTermsManagerAddress.address, RentalTermsManagerAbi.abi, signer);
+    const rentalContract = new ethers.Contract(AhoyRentalsAddress.address, AhoyRentalsAbi.abi, signer);
 
+    const balance = await usdcContract.balanceOf(account);
+    console.log(`User balance for account ${account}: ${formatUnits(balance, 18)} USDC`);
+    setUsdcContract(usdcContract);
     setBoatsContract(boatsContract);
+    setMarketContract(marketContract);
+    setRentalTermsContract(rentalTermsContract);
     setRentalContract(rentalContract);
-    setEscrowContract(escrowContract);
   };
 
   const uploadImageToIpfs = async (image) => {
@@ -393,7 +407,7 @@ export const Web3Provider = ({ children }) => {
   };
 
   return (
-    <Web3Context.Provider value={{ client, hasWeb3, web3Handler, boatsContract, rentalContract, escrowContract, loading, setImageFile, createBoatNft, updateBoatTokenURI, updateBoatPrice, updateBoatListingStatus, updateBoatListingRefundability, getNFTsInRange, inventoryOf, getBoat, executeSale, relistBoat, createRentalNft }}>
+    <Web3Context.Provider value={{ client, hasWeb3, web3Handler, boatsContract, rentalContract, marketContract, rentalTermsContract, loading, setImageFile, createBoatNft, updateBoatTokenURI, updateBoatPrice, updateBoatListingStatus, updateBoatListingRefundability, getNFTsInRange, inventoryOf, getBoat, executeSale, relistBoat, createRentalNft }}>
       {children}
     </Web3Context.Provider>
   );
