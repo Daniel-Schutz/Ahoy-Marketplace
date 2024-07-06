@@ -8,11 +8,6 @@ import { FormattedMessage, intlShape } from '../../../../util/reactIntl';
 import { ACCOUNT_SETTINGS_PAGES } from '../../../../routing/routeConfiguration';
 import { propTypes } from '../../../../util/types';
 
-// Contract imports 
-import AhoyAddress from '../../../../contractsData/Ahoy-address.json';
-import AhoyAbi from '../../../../contractsData/Ahoy.json';
-import { ethers } from "ethers";
-
 import {
   Avatar,
   InlineTextButton,

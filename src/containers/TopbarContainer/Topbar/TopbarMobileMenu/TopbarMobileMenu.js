@@ -6,11 +6,6 @@ import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 
-//contract imports 
-import AhoyAddress from '../../../../contractsData/Ahoy-address.json'
-import AhoyAbi from '../../../../contractsData/Ahoy.json'
-import { ethers } from "ethers";
-
 import { ACCOUNT_SETTINGS_PAGES } from '../../../../routing/routeConfiguration';
 import { FormattedMessage } from '../../../../util/reactIntl';
 import { propTypes } from '../../../../util/types';
