@@ -158,3 +158,10 @@ export const createBoatNftApi = body => {
   return post('/api/create-boat-nft', body);
 };
 
+export const boatSale = body => {
+  return post('/api/boat-sale', body);
+};
+
+export const mintBoat = body => {
+  return post('/api/mint-boat', body);
+};

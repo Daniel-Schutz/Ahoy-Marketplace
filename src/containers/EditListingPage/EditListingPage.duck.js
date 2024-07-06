@@ -637,6 +637,7 @@ export function requestCreateListingDraft(data, config) {
 // display the state.
 // NOTE: what comes to stock management, this follows the same pattern used in create listing call
 export function requestUpdateListing(tab, data, config) {
+  console.log("Metamask call to update price here")
   return (dispatch, getState, sdk) => {
     dispatch(updateListingRequest(data));
     const { id, stockUpdate, images, ...rest } = data;
