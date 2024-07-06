@@ -15,7 +15,8 @@ const createUserWithIdp = require('./api/auth/createUserWithIdp');
 const createBoatNft = require('./api/create-boat-nft');
 const { authenticateFacebook, authenticateFacebookCallback } = require('./api/auth/facebook');
 const { authenticateGoogle, authenticateGoogleCallback } = require('./api/auth/google');
-
+const boatSale = require('./api/boat-sale');
+const mintBoat = require('./api/mint-boat');
 const router = express.Router();
 
 // ================ API router middleware: ================ //
@@ -52,8 +53,9 @@ router.post('/bitpay-initiate-privileged', bitpayInitiatePrivileged);
 router.post('/transition-privileged', transitionPrivileged);
 router.post('/update_metadata', updateTransactionMetadata);
 router.post('/create-boat-nft', createBoatNft);
-
-
+router.post('/boat-sale', boatSale);
+router.post('/mint-boat', mintBoat);
+ 
 // Create user with identity provider (e.g. Facebook or Google)
 // This endpoint is called to create a new user after user has confirmed
 // they want to continue with the data fetched from IdP (e.g. name and email)
