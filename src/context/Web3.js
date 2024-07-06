@@ -15,6 +15,7 @@ import _ from 'lodash';
 import { removeURLfromIPFS, uploadImagetoIPFS, uploadJSONtoIPFS } from '../util/pinata';
 import { createBoatNftApi } from '../util/api';
 const Web3Context = createContext();
+import axios from 'axios';
 
 export const Web3Provider = ({ children }) => {
   const [client, setClient] = useState(null);
@@ -183,53 +184,77 @@ export const Web3Provider = ({ children }) => {
   
 
   const createBoatNft = async ({ boatDetails, price, uuid }) => {
-    console.log(boatDetails)
-    console.log(price)
     if (!client) {
       console.error("Client is not initialized.");
       return;
     }
+  
     const listingType = boatDetails.listingType;
-    let hourlyPrice;
-    let dailyPrice;
-    let sellPrice;
-    const refundabilityPeriod = parseInt(boatDetails.refundPeriod);
-    const deposit = parseInt(0);
-    const closedPeriod = parseInt(boatDetails.closedPeriod);
-
+    const refundabilityPeriod = parseInt(boatDetails.refundPeriod, 10) * 3600; // Convert hours to seconds
+    const closedPeriod = parseInt(boatDetails.closedPeriod, 10) * 3600; // Convert hours to seconds
+    const wholeDollarPrice = Math.floor(price / 100);
+  
+    let sellPrice = 0, dailyPrice = 0, hourlyPrice = 0, deposit = 0;
+  
+    if (listingType === "sale") {
+      sellPrice = wholeDollarPrice;
+    } else if (listingType === "hourly-rental") {
+      hourlyPrice = wholeDollarPrice;
+      deposit = Math.floor(boatDetails.deposit.amount / 100);
+    } else if (listingType === "daily-rental") {
+      dailyPrice = wholeDollarPrice;
+      deposit = Math.floor(boatDetails.deposit.amount / 100);
+    }
+  
     try {
+      // Check if imageFile is available and upload it to IPFS
       if (imageFile) {
         const uploadedImageUrl = await uploadImageToIpfs(imageFile);
         if (uploadedImageUrl) {
           boatDetails.nftImage = uploadedImageUrl;
           const metadataURL = await uploadMetaDatatoIpfs(boatDetails);
           if (metadataURL) {
-            if (listingType === "sale") {
-              sellPrice = parseInt(price);
-              dailyPrice = 0;
-              hourlyPrice = 0;
-            } else if (listingType === "hourly-rental") {
-              sellPrice = 0;
-              dailyPrice = 0;
-              hourlyPrice = parseInt(price);
-            } else {
-              sellPrice = 0;
-              dailyPrice = parseInt(price);
-              hourlyPrice = 0;
-            }
-            const transaction = await boatsContract.mint(metadataURL, uuid, hourlyPrice, dailyPrice, true, refundabilityPeriod, deposit, closedPeriod, sellPrice);
-            const bool = true;
-            const body = {metadataURL, uuid, hourlyPrice, dailyPrice, bool, refundabilityPeriod, deposit, closedPeriod, sellPrice}
-            fetchCreateBoatNft(body)
-            await transaction.wait();
-            if (transaction) {
-              console.log("NFT minted successfully:", transaction);
+            const requestBody = {
+              chainId: client.chainId,
+              account: client.account,
+              metadataURL, // Include metadata URL in the request body
+              uuid
+            };
+            const response = await axios.post('http://localhost:3001/api/v1/token', requestBody);
+            console.log('Response from backend:', response.data);
+
+            const tokenId = response.data.tokenId;
+
+            if (listingType === 'hourly-rental' || listingType === 'daily-rental') {
+              let adjustedDailyPrice = 0, adjustedHourlyPrice = 0;
+              if (listingType === 'hourly-rental') {
+                adjustedHourlyPrice = hourlyPrice;
+                adjustedDailyPrice = hourlyPrice * 24;
+              } else {
+                adjustedDailyPrice = dailyPrice;
+                adjustedHourlyPrice = dailyPrice / 24;
+              }
+        
+              const securityDeposit = deposit;
+        
+              await rentalTermsContract.setRentalTerms(
+                tokenId,
+                adjustedHourlyPrice,
+                adjustedDailyPrice,
+                closedPeriod,
+                refundabilityPeriod,
+                securityDeposit
+              );
+            } else if (listingType === 'sale') {
+              await marketContract.createListedToken(tokenId, sellPrice);
             }
           }
         }
       }
+  
+      
     } catch (error) {
-      console.error("Error creating boat NFT:", error);
+      console.error('Error creating boat NFT:', error);
     }
   };
 
