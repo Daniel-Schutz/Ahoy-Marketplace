@@ -18,7 +18,7 @@ const { authenticateGoogle, authenticateGoogleCallback } = require('./api/auth/g
 const boatSale = require('./api/boat-sale');
 const mintBoat = require('./api/mint-boat');
 const router = express.Router();
-
+const getAhoyNFT = require('./get-ahoy-nft');
 // ================ API router middleware: ================ //
 
 // Parse Transit body first to a string
@@ -55,6 +55,7 @@ router.post('/update_metadata', updateTransactionMetadata);
 router.post('/create-boat-nft', createBoatNft);
 router.post('/boat-sale', boatSale);
 router.post('/mint-boat', mintBoat);
+router.post('/get-ahoy-nft', getAhoyNFT);
  
 // Create user with identity provider (e.g. Facebook or Google)
 // This endpoint is called to create a new user after user has confirmed

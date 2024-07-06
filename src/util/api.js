@@ -165,3 +165,8 @@ export const boatSale = body => {
 export const mintBoat = body => {
   return post('/api/mint-boat', body);
 };
+
+
+export const getAhoyNFT = body => {
+  return post('/api/get-ahoy-nft', body);
+};

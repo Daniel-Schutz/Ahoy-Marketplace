@@ -22,7 +22,8 @@ export const transitions = {
   // A customer can also initiate a transaction with an inquiry, and
   // then transition that with a request.
   INQUIRE: 'transition/inquire',
-  REQUEST_PAYMENT_AFTER_INQUIRY: 'transition/request-payment-after-inquiry',
+  REQUEST_PAYMENT_AFTER_INQUIRY:
+    'transition/request-payment-after-inquiry',
 
   // Stripe SDK might need to ask 3D security from customer, in a separate front-end step.
   // Therefore we need to make another transition to Marketplace API,
@@ -33,24 +34,11 @@ export const transitions = {
   // the transaction will expire automatically.
   EXPIRE_PAYMENT: 'transition/expire-payment',
 
-  // When the provider accepts or declines a transaction from the
-  // SalePage, it is transitioned with the accept or decline transition.
-  ACCEPT: 'transition/accept',
-  DECLINE: 'transition/decline',
-
-  // The operator can accept or decline the offer on behalf of the provider
-  OPERATOR_ACCEPT: 'transition/operator-accept',
-  OPERATOR_DECLINE: 'transition/operator-decline',
-
-  // The backend automatically expire the transaction.
-  EXPIRE: 'transition/expire',
-
   // Admin can also cancel the transition.
   CANCEL: 'transition/cancel',
 
   // The backend will mark the transaction completed.
   COMPLETE: 'transition/complete',
-  OPERATOR_COMPLETE: 'transition/operator-complete',
 
   // Reviews are given through transaction transitions. Review 1 can be
   // by provider or customer, and review 2 will be the other party of
@@ -59,8 +47,10 @@ export const transitions = {
   REVIEW_2_BY_PROVIDER: 'transition/review-2-by-provider',
   REVIEW_1_BY_CUSTOMER: 'transition/review-1-by-customer',
   REVIEW_2_BY_CUSTOMER: 'transition/review-2-by-customer',
-  EXPIRE_CUSTOMER_REVIEW_PERIOD: 'transition/expire-customer-review-period',
-  EXPIRE_PROVIDER_REVIEW_PERIOD: 'transition/expire-provider-review-period',
+  EXPIRE_CUSTOMER_REVIEW_PERIOD:
+    'transition/expire-customer-review-period',
+  EXPIRE_PROVIDER_REVIEW_PERIOD:
+    'transition/expire-provider-review-period',
   EXPIRE_REVIEW_PERIOD: 'transition/expire-review-period',
 };
 
@@ -78,10 +68,7 @@ export const states = {
   INQUIRY: 'inquiry',
   PENDING_PAYMENT: 'pending-payment',
   PAYMENT_EXPIRED: 'payment-expired',
-  PREAUTHORIZED: 'preauthorized',
-  DECLINED: 'declined',
-  ACCEPTED: 'accepted',
-  EXPIRED: 'expired',
+  BOOKED: 'booked',
   CANCELED: 'canceled',
   DELIVERED: 'delivered',
   REVIEWED: 'reviewed',
@@ -102,7 +89,7 @@ export const graph = {
   // id is defined only to support Xstate format.
   // However if you have multiple transaction processes defined,
   // it is best to keep them in sync with transaction process aliases.
-  id: 'bitpay-default-booking/release-1',
+  id: 'bitpay-instant-booking/release-1',
 
   // This 'initial' state is a starting point for new transaction
   initial: states.INITIAL,
@@ -124,28 +111,16 @@ export const graph = {
     [states.PENDING_PAYMENT]: {
       on: {
         [transitions.EXPIRE_PAYMENT]: states.PAYMENT_EXPIRED,
-        [transitions.CONFIRM_PAYMENT]: states.PREAUTHORIZED,
+        [transitions.CONFIRM_PAYMENT]: states.BOOKED,
       },
     },
 
     [states.PAYMENT_EXPIRED]: {},
-    [states.PREAUTHORIZED]: {
-      on: {
-        [transitions.DECLINE]: states.DECLINED,
-        [transitions.OPERATOR_DECLINE]: states.DECLINED,
-        [transitions.EXPIRE]: states.EXPIRED,
-        [transitions.ACCEPT]: states.ACCEPTED,
-        [transitions.OPERATOR_ACCEPT]: states.ACCEPTED,
-      },
-    },
-
-    [states.DECLINED]: {},
-    [states.EXPIRED]: {},
-    [states.ACCEPTED]: {
+    [states.BOOKED]: {
       on: {
         [transitions.CANCEL]: states.CANCELED,
         [transitions.COMPLETE]: states.DELIVERED,
-        [transitions.OPERATOR_COMPLETE]: states.DELIVERED,
+
       },
     },
 
@@ -179,15 +154,9 @@ export const graph = {
 // The first transition and most of the expiration transitions made by system are not relevant
 export const isRelevantPastTransition = transition => {
   return [
-    transitions.ACCEPT,
-    transitions.OPERATOR_ACCEPT,
     transitions.CANCEL,
     transitions.COMPLETE,
-    transitions.OPERATOR_COMPLETE,
     transitions.CONFIRM_PAYMENT,
-    transitions.DECLINE,
-    transitions.OPERATOR_DECLINE,
-    transitions.EXPIRE,
     transitions.REVIEW_1_BY_CUSTOMER,
     transitions.REVIEW_1_BY_PROVIDER,
     transitions.REVIEW_2_BY_CUSTOMER,

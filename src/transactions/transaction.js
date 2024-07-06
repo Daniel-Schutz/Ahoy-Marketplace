@@ -3,7 +3,7 @@ import { ensureTransaction } from '../util/data';
 import * as purchaseProcess from './transactionProcessPurchase';
 import * as bookingProcess from './transactionProcessBooking';
 import * as inquiryProcess from './transactionProcessInquiry';
-import * as bitpayBookingProcess from './transactionProcessBitpayBooking';
+import * as bitpayInstantBookingProcess from './transactionProcessBitpayInstantBooking';
 import * as bitpayPurchaseProcess from './transactionProcessBitpayPurchase';
 // Supported unit types
 // Note: These are passed to translations/microcopy in certain cases.
@@ -18,7 +18,7 @@ export const INQUIRY = 'inquiry';
 export const PURCHASE_PROCESS_NAME = 'default-purchase';
 export const BOOKING_PROCESS_NAME = 'default-booking';
 export const INQUIRY_PROCESS_NAME = 'default-inquiry';
-export const BITPAY_BOOKING_PROCESS_NAME = 'bitpay-default-booking';
+export const BITPAY_INSTANT_PROCESS_NAME = 'bitpay-instant-booking';
 export const BITPAY_PURCHASE_PROCESS_NAME = 'bitpay-default-purchase';
 
 /**
@@ -54,9 +54,9 @@ const PROCESSES = [
     unitTypes: [INQUIRY],
   },
   {
-    name: BITPAY_BOOKING_PROCESS_NAME,
-    alias: `${BITPAY_BOOKING_PROCESS_NAME}/release-1`,
-    process: bitpayBookingProcess,
+    name: BITPAY_INSTANT_PROCESS_NAME,
+    alias: `${BITPAY_INSTANT_PROCESS_NAME}/release-1`,
+    process: bitpayInstantBookingProcess,
     unitTypes: [DAY, NIGHT, HOUR],
   },
   {
@@ -306,7 +306,7 @@ export const isPurchaseProcessAlias = processAlias => {
 export const isBookingProcess = processName => {
   const latestProcessName = resolveLatestProcessName(processName);
   const processInfo = PROCESSES.find(process => process.name === latestProcessName);
-  return [BOOKING_PROCESS_NAME, BITPAY_BOOKING_PROCESS_NAME].includes(processInfo?.name);
+  return [BOOKING_PROCESS_NAME, BITPAY_INSTANT_PROCESS_NAME].includes(processInfo?.name);
 };
 
 /**
