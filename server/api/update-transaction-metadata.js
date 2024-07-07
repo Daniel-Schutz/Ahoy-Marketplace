@@ -50,3 +50,27 @@ module.exports = (req, res) => {
       handleError(res, e);
     });
 };
+
+//this is the call for when the renter is about to use the boat
+// function checkIn(
+//   uint rentalId
+// )
+//   public
+//   validRentalAgreement(rentalId)
+//   onlyBoatOrContractOwner(_rentalAgreements[rentalId].boatId)
+// {
+//   checkInTime[rentalId] = block.timestamp;
+//   emit RenterCheckedIn(rentalId);
+// }
+
+// // this is the call for when they return the boat after using it
+// function checkOut(
+//   uint rentalId
+// )
+//   public
+//   validRentalAgreement(rentalId)
+//   onlyBoatOrContractOwner(_rentalAgreements[rentalId].boatId)
+// {
+//   checkOutTime[rentalId] = block.timestamp;
+//   emit RenterCheckedOut(rentalId);
+// }
