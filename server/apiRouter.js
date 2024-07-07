@@ -19,6 +19,9 @@ const boatSale = require('./api/boat-sale');
 const mintBoat = require('./api/mint-boat');
 const router = express.Router();
 const getAhoyNFT = require('./get-ahoy-nft');
+const handleRentalCompletion = require('./handle-rental-completion');
+const handleRentalCancellation = require('./handle-rental-cancellation');
+
 // ================ API router middleware: ================ //
 
 // Parse Transit body first to a string
@@ -56,6 +59,10 @@ router.post('/create-boat-nft', createBoatNft);
 router.post('/boat-sale', boatSale);
 router.post('/mint-boat', mintBoat);
 router.post('/get-ahoy-nft', getAhoyNFT);
+
+router.post('/handle-rental-completion', handleRentalCompletion);
+router.post('/handle-rental-cancellation', handleRentalCancellation);
+
  
 // Create user with identity provider (e.g. Facebook or Google)
 // This endpoint is called to create a new user after user has confirmed

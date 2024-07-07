@@ -170,3 +170,13 @@ export const mintBoat = body => {
 export const getAhoyNFT = body => {
   return post('/api/get-ahoy-nft', body);
 };
+
+export const handleRentalCompletion = body => {
+  return post('/api/handle-rental-completion', body);
+};
+
+export const handleRentalCancellation = body => {
+  return post('/api//handle-rental-cancellation', body);
+};
+
+ 

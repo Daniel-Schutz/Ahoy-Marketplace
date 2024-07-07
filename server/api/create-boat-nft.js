@@ -1,19 +1,25 @@
-module.exports = (req, res) => {
-    const { metadataURL, uuid, hourlyPrice, dailyPrice, bool, refundabilityPeriod, deposit, closedPeriod, sellPrice } = req.body;
-    
-    console.log(metadataURL,uuid, hourlyPrice, dailyPrice, bool, refundabilityPeriod, deposit, closedPeriod, sellPrice)
+module.exports = async (req, res) => {
+  const { tokenId, adjustedHourlyPrice, adjustedDailyPrice, closedPeriod, refundabilityPeriod, securityDeposit, sellPrice } = req.body;
 
-    // this is the final call for when they put it to rent
-    await rentalTermsContract.setRentalTerms(
-      tokenId,
-      adjustedHourlyPrice,
-      adjustedDailyPrice,
-      closedPeriod,
-      refundabilityPeriod,
-      securityDeposit
-    );
+  try {
+      // Set rental terms
+      await rentalTermsContract.setRentalTerms(
+          tokenId,
+          adjustedHourlyPrice,
+          adjustedDailyPrice,
+          closedPeriod,
+          refundabilityPeriod,
+          securityDeposit
+      );
 
-    // this is the final call for when they put it for sale
-    await marketContract.createListedToken(tokenId, sellPrice);
- 
-  };
+      // Create the listed token for sale
+      await marketContract.createListedToken(tokenId, sellPrice);
+
+      // Send a success response
+      res.status(200).send({ success: true, message: 'Rental terms and sale listing created successfully.' });
+  } catch (error) {
+      // Handle errors and send a failure response
+      console.error(error);
+      res.status(500).send({ success: false, error: error.message });
+  }
+};

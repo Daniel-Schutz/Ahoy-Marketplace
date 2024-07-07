@@ -11,9 +11,9 @@ function getAhoyNFT(chainId) {
 }
 
 module.exports = (req, res) => {
-    const { boat_uuid, account_address, price } = req.body;
+  const { chainId, account, metadataURL, uuid } = req.body;
    try {
-    const { chainId, account, metadataURL, uuid } = req.body;
+
     console.log({account})
     console.log({chainId})
     console.log({uuid})

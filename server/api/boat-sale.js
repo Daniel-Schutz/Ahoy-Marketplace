@@ -1,11 +1,16 @@
-module.exports = (req, res) => {
-    const { boat_uuid, account_address, price } = req.body;
+module.exports = async (req, res) => {
+    const {boat_uuid} = req.body;
 
-		const tokenId = await ahoyTokenizedBoats.fromUuid('sample-uuid');
-		
-		const priceofboat = await ahoyMarket.getAskingPrice(tokenId);
+    try {
+        const tokenId = await ahoyTokenizedBoats.fromUuid(boat_uuid);
+       
+        // Execute the sale
+        await ahoyMarket.executeSale(tokenId);
 
-		// Execute the sale
-		await ahoyMarket.executeSale(tokenId);
-
+     
+        res.status(200).send({ success: true });
+    } catch (error) {
+       
+        res.status(500).send({ success: false, error: error.message });
+    }
 };
